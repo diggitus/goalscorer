@@ -1,0 +1,13 @@
+<div>{{ selectedPlayer.name }}</div>
+<button tyoe="text" (click)="onOK()">OK</button>
+
+
+
+<div class="row" *ngFor="let row of rows">
+  <ng-container *ngFor="let fieldCell of row.fieldCells">
+    <div *ngIf="fieldCell.soccerPlayer" class="field-cell soccer-player" [ngClass]="{'selected': fieldCell.soccerPlayer.selected, 'player2': fieldCell.soccerPlayer.player === player2}"
+     (click)="onFieldCellClick(fieldCell)">{{ fieldCell.soccerPlayer.num }}</div>
+
+    <div *ngIf="!fieldCell.soccerPlayer" class="field-cell" [ngClass]="{'disabled': fieldCell.disabled, 'highlighted': fieldCell.highlighted}" (click)="onFieldCellClick(fieldCell)"></div>
+  </ng-container>
+</div>
