@@ -11,5 +11,4 @@ cache:
     - "node_modules"
 
 script: # the build step
-   - ng test --single-run true --reporters progress
    - ng build --prod
