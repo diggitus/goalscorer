@@ -1,3 +1,42 @@
 <div class="overview">
     <h1>Goal Scorer</h1>
+
+    <div class="team-selection">
+        <div class="team">
+            <i *ngIf="selectedTeam === 1" class="ball"></i>
+            <span (click)="onSelectTeam(1)">Mannschaft 1</span>
+        </div>
+
+        <div class="team">
+            <span (click)="onSelectTeam(2)">Mannschaft 2</span>
+            <i *ngIf="selectedTeam === 2" class="ball"></i>
+        </div>
+    </div>
+
+    <ul class="games">
+        <li *ngFor="let game of games">
+            <div class="team">
+                <div class="shirt"></div>
+                <div class="team-name">Bayern München</div>
+            </div>
+
+            <div class="goals">
+                <span>0 : 0</span>
+            </div>
+
+            <div class="team">
+                <div class="team-name">Dortmund</div>
+                <div class="shirt"></div>
+            </div>
+
+            <div class="game-actions">
+                <a href="#" (click)="playGame($event)">Spielen</a>
+            </div>
+
+        </li>
+    </ul>
+
+    <div class="actions">
+        <a href="#" (click)="createNewGame($event)">Neues Spiel</a>
+    </div>
 </div>
