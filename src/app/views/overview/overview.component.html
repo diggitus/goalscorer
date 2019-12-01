@@ -13,19 +13,19 @@
         </div>
     </div>
 
-    <ul class="games">
+    <ul class="games" *ngIf="games">
         <li *ngFor="let game of games">
             <div class="team">
                 <div class="shirt"></div>
-                <div class="team-name">Bayern München</div>
+                <div class="team-name">{{ game.firstTeam.name }}</div>
             </div>
 
             <div class="goals">
-                <span>0 : 0</span>
+                <span>{{ game.firstTeamGoals }} : {{ game.secondTeamGoals }}</span>
             </div>
 
             <div class="team">
-                <div class="team-name">Dortmund</div>
+                <div class="team-name">{{ game.secondTeam.name }}</div>
                 <div class="shirt"></div>
             </div>
 

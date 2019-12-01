@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Game } from 'src/app/model/game';
 import { Team } from 'src/app/model/team';
 import { OverviewService } from './overview.service';
+import { GameDto } from 'src/app/model/game.dto';
 
 @Component({
     selector: 'app-overview',
@@ -19,18 +20,28 @@ export class OverviewComponent implements OnInit {
     ) {
         this.selectedTeam = 1;
         this.games = null;
-     }
+    }
 
     ngOnInit() {
-        this.games = new Array<Game>();
+        this.overviewService.listGames().subscribe(resp => {
+            this.games = this.parseGames(resp.games);
+        })
+    }
 
-        const game = new Game();
-        game.team1 = new Team('Bayern');
-        game.team1Goals = 0;
-        game.team2 = new Team('Dortmund');
-        game.team1Goals = 1;
-        this.games.push(game);
-     }
+    private parseGames(gamesResp: any): Array<Game> {
+        const games = new Array<Game>();
+        
+        for (let i = 0; i < gamesResp.length; i++) {
+            const gameResp = gamesResp[i];
+            const game = new Game();
+            game.firstTeam = this.overviewService.getTeam(parseInt(gameResp.firstTeam));
+            game.secondTeam = this.overviewService.getTeam(parseInt(gameResp.secondTeam));
+            game.firstTeamGoals = gameResp.firstTeamGoals;
+            game.secondTeamGoals = gameResp.secondTeamGoals;
+            games.push(game);
+        }
+        return games;
+    }
 
     onSelectTeam(teamId: number) {
         this.selectedTeam = teamId;
@@ -39,13 +50,13 @@ export class OverviewComponent implements OnInit {
     createNewGame(event: MouseEvent) {
         event.preventDefault();
 
-        const game = new Game();
-        game.team1 = new Team('Bayern');
-        game.team1Goals = 0;
-        game.team2 = new Team('Dortmund');
-        game.team1Goals = 1;
-
+        const game = new GameDto(0, 1, 0, 1);
         this.overviewService.createGame(game).subscribe(() => {
+            const game = new Game();
+            game.firstTeam = this.overviewService.getTeam(0);
+            game.secondTeam = this.overviewService.getTeam(1);
+            game.firstTeamGoals = 0;
+            game.secondTeamGoals = 1;
             this.games.push(game);
         });
     }

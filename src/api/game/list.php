@@ -14,18 +14,17 @@ $num = $stmt->rowCount();
  
 if($num > 0){
  
-    $games=array();
-    $games["games"]=array();
+    $games["games"] = array();
 
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
         extract($row);
  
         $game=array(
             "id" => $id,
-            "team1" => $team1,
-            "team2" => $team2,
-            "goals1" => $goals1,
-            "goals2" => $goals2
+            "firstTeam" => $firstTeam,
+            "secondTeam" => $secondTeam,
+            "firstTeamGoals" => $firstTeamGoals,
+            "secondTeamGoals" => $secondTeamGoals
         );
         array_push($games["games"], $game);
     }

@@ -5,10 +5,10 @@ class Game {
     private $tableName = "game";
 
     public $id;
-    public $team1;
-    public $team2;
-    public $goals1;
-    public $goals2;
+    public $firstTeam;
+    public $secondTeam;
+    public $firstTeamGoals;
+    public $secondTeamGoals;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -28,27 +28,27 @@ class Game {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $this->team1 = $row['team1'];
-        $this->team2 = $row['team2'];
-        $this->goals1 = $row['goals1'];
-        $this->goals2 = $row['goals2'];
+        $this->firstTeam = $row['firstTeam'];
+        $this->secondTeam = $row['secondTeam'];
+        $this->firstTeamGoals = $row['firstTeamGoals'];
+        $this->secondTeamGoals = $row['secondTeamGoals'];
     }
 
     public function create(){
-        $query = "INSERT INTO " . $this->tableName . " SET team1=:team1, team2=:team2, goals1=:goals1, goals2=:goals2";
+        $query = "INSERT INTO " . $this->tableName . " SET firstTeam=:firstTeam, secondTeam=:secondTeam, firstTeamGoals=:firstTeamGoals, secondTeamGoals=:secondTeamGoals";
         $stmt = $this->conn->prepare($query);
      
         // sanitize
-        $this->team1=htmlspecialchars(strip_tags($this->team1));
-        $this->team2=htmlspecialchars(strip_tags($this->team2));
-        $this->goals1=htmlspecialchars(strip_tags($this->goals1));
-        $this->goals2=htmlspecialchars(strip_tags($this->goals2));
+        $this->firstTeam=htmlspecialchars(strip_tags($this->firstTeam));
+        $this->secondTeam=htmlspecialchars(strip_tags($this->secondTeam));
+        $this->firstTeamGoals=htmlspecialchars(strip_tags($this->firstTeamGoals));
+        $this->secondTeamGoals=htmlspecialchars(strip_tags($this->secondTeamGoals));
      
         // bind values
-        $stmt->bindParam(":team1", $this->team1);
-        $stmt->bindParam(":team2", $this->team2);
-        $stmt->bindParam(":goals1", $this->goals1);
-        $stmt->bindParam(":goals2", $this->goals2);
+        $stmt->bindParam(":firstTeam", $this->firstTeam);
+        $stmt->bindParam(":secondTeam", $this->secondTeam);
+        $stmt->bindParam(":firstTeamGoals", $this->firstTeamGoals);
+        $stmt->bindParam(":secondTeamGoals", $this->secondTeamGoals);
      
         if($stmt->execute()){
             return true;
@@ -57,21 +57,21 @@ class Game {
     }
 
     public function update() {
-        $query = "UPDATE " . $this->tableName . " SET team1=:team1, team2=:team2, goals1=:goals1, goals2=:goals2 WHERE id=:id";
+        $query = "UPDATE " . $this->tableName . " SET firstTeam=:firstTeam, secondTeam=:secondTeam, firstTeamGoals=:firstTeamGoals, secondTeamGoals=:secondTeamGoals WHERE id=:id";
         $stmt = $this->conn->prepare($query);
 
         // sanitize
-        $this->team1=htmlspecialchars(strip_tags($this->team1));
-        $this->team2=htmlspecialchars(strip_tags($this->team2));
-        $this->goals1=htmlspecialchars(strip_tags($this->goals1));
-        $this->goals2=htmlspecialchars(strip_tags($this->goals2));
+        $this->firstTeam=htmlspecialchars(strip_tags($this->firstTeam));
+        $this->secondTeam=htmlspecialchars(strip_tags($this->secondTeam));
+        $this->firstTeamGoals=htmlspecialchars(strip_tags($this->firstTeamGoals));
+        $this->secondTeamGoals=htmlspecialchars(strip_tags($this->secondTeamGoals));
         $this->id=htmlspecialchars(strip_tags($this->id));
 
         // bind new values
-        $stmt->bindParam(':team1', $this->team1);
-        $stmt->bindParam(':team2', $this->team2);
-        $stmt->bindParam(':goals1', $this->goals1);
-        $stmt->bindParam(':goals2', $this->goals2);
+        $stmt->bindParam(':firstTeam', $this->firstTeam);
+        $stmt->bindParam(':secondTeam', $this->secondTeam);
+        $stmt->bindParam(':firstTeamGoals', $this->firstTeamGoals);
+        $stmt->bindParam(':secondTeamGoals', $this->secondTeamGoals);
         $stmt->bindParam(':id', $this->id);
 
         // execute the query

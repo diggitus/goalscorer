@@ -16,10 +16,10 @@ $gameEntity = new Game($db);
 $data = json_decode(file_get_contents("php://input"));
 
 $gameEntity->id = $data->id;
-$gameEntity->team1 = $data->team1;
-$gameEntity->team2 = $data->team2;
-$gameEntity->goals1 = $data->goals1;
-$gameEntity->goals2 = $data->goals2;
+$gameEntity->firstTeam = $data->firstTeam;
+$gameEntity->secondTeam = $data->secondTeam;
+$gameEntity->firstTeamGoals = $data->firstTeamGoals;
+$gameEntity->secondTeamGoals = $data->secondTeamGoals;
  
 if($gameEntity->update()){
     http_response_code(200);
