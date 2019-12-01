@@ -5,27 +5,22 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
+ 
 include_once '../database.php';
 include_once '../objects/game.php';
-
+ 
 $database = new Database();
 $db = $database->getConnection();
 
-$data = json_decode(file_get_contents("php://input"));
-
 $gameEntity = new Game($db);
-$gameEntity->team1 = $data->team1;
-$gameEntity->team2 = $data->team2;
-$gameEntity->goals1 = $data->goals1;
-$gameEntity->goals2 = $data->goals2;
-
-if($gameEntity->create()){
-    http_response_code(201);
-    echo json_encode(array("message" => "Game was created."));
+$gameEntity->id = isset($_GET['id']) ? $_GET['id'] : die();
+ 
+if($gameEntity->delete()){
+    http_response_code(200);
+    echo json_encode(array("message" => "Game was deleted."));
 } else{
     http_response_code(503);
-    echo json_encode(array("message" => "Unable to create game."));
+    echo json_encode(array("message" => "Unable to delete game."));
 }
 
 ?>

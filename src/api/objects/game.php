@@ -56,6 +56,44 @@ class Game {
         return false;
     }
 
+    public function update() {
+        $query = "UPDATE " . $this->tableName . " SET team1=:team1, team2=:team2, goals1=:goals1, goals2=:goals2 WHERE id=:id";
+        $stmt = $this->conn->prepare($query);
+
+        // sanitize
+        $this->team1=htmlspecialchars(strip_tags($this->team1));
+        $this->team2=htmlspecialchars(strip_tags($this->team2));
+        $this->goals1=htmlspecialchars(strip_tags($this->goals1));
+        $this->goals2=htmlspecialchars(strip_tags($this->goals2));
+        $this->id=htmlspecialchars(strip_tags($this->id));
+
+        // bind new values
+        $stmt->bindParam(':team1', $this->team1);
+        $stmt->bindParam(':team2', $this->team2);
+        $stmt->bindParam(':goals1', $this->goals1);
+        $stmt->bindParam(':goals2', $this->goals2);
+        $stmt->bindParam(':id', $this->id);
+
+        // execute the query
+        if($stmt->execute()){
+            return true;
+        }
+        return false;
+    }
+
+    public function delete() {
+        $query = "DELETE FROM " . $this->tableName . " WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+
+        $this->id=htmlspecialchars(strip_tags($this->id));
+        $stmt->bindParam(1, $this->id);
+        
+        if($stmt->execute()){
+            return true;
+        }
+        return false;
+    }
+
 }
 
 ?>

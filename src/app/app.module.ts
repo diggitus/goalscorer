@@ -7,6 +7,8 @@ import { OverviewComponent } from './views/overview/overview.component';
 import { Routes, RouterModule } from '@angular/router';
 import { GameComponent } from './views/game/game.component';
 import { CommonModule } from '@angular/common';
+import { OverviewService } from './views/overview/overview.service';
+import { HttpClientModule } from '@angular/common/http';
 
 const routes: Routes = [
   { path: 'overview', component: OverviewComponent },
@@ -19,12 +21,16 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     BrowserModule,
     FormsModule,
-    CommonModule
+    CommonModule,
+    HttpClientModule
   ],
   declarations: [
     AppComponent,
     OverviewComponent,
     GameComponent
+  ],
+  providers: [
+    OverviewService
   ],
   bootstrap: [
     AppComponent
