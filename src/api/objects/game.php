@@ -21,6 +21,19 @@ class Game {
         return $stmt;
     }
 
+    public function get() {        
+        $query = "SELECT * FROM " . $this->tableName . " WHERE id = ? LIMIT 0,1";
+        $stmt = $this->conn->prepare( $query );
+        $stmt->bindParam(1, $this->id);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $this->team1 = $row['team1'];
+        $this->team2 = $row['team2'];
+        $this->goals1 = $row['goals1'];
+        $this->goals2 = $row['goals2'];
+    }
+
     public function create(){
         $query = "INSERT INTO " . $this->tableName . " SET team1=:team1, team2=:team2, goals1=:goals1, goals2=:goals2";
         $stmt = $this->conn->prepare($query);
