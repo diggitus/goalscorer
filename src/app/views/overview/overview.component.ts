@@ -23,8 +23,16 @@ export class OverviewComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.listGames();
+    }
+
+    private listGames() {
         this.overviewService.listGames().subscribe(resp => {
-            this.games = this.parseGames(resp.games);
+            if (resp == null) {
+                this.games = new Array<Game>();
+            } else {
+                this.games = this.parseGames(resp.games);
+            }
         })
     }
 
@@ -34,6 +42,7 @@ export class OverviewComponent implements OnInit {
         for (let i = 0; i < gamesResp.length; i++) {
             const gameResp = gamesResp[i];
             const game = new Game();
+            game.id = gameResp.id;
             game.firstTeam = this.overviewService.getTeam(parseInt(gameResp.firstTeam));
             game.secondTeam = this.overviewService.getTeam(parseInt(gameResp.secondTeam));
             game.firstTeamGoals = gameResp.firstTeamGoals;
@@ -50,14 +59,17 @@ export class OverviewComponent implements OnInit {
     createNewGame(event: MouseEvent) {
         event.preventDefault();
 
-        const game = new GameDto(0, 1, 0, 1);
+        const game = new GameDto(0, 1, 0, 0);
         this.overviewService.createGame(game).subscribe(() => {
-            const game = new Game();
-            game.firstTeam = this.overviewService.getTeam(0);
-            game.secondTeam = this.overviewService.getTeam(1);
-            game.firstTeamGoals = 0;
-            game.secondTeamGoals = 1;
-            this.games.push(game);
+            this.listGames();
+        });
+    }
+
+    deleteGame(event: MouseEvent, game: Game) {
+        event.preventDefault();
+
+        this.overviewService.deleteGame(game).subscribe(() => {
+            this.listGames();
         });
     }
 
