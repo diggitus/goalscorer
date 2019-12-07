@@ -9,6 +9,7 @@ import { GameDto } from 'src/app/model/game.dto';
 @Injectable()
 export class OverviewService {
     
+    
     private teams: Array<Team>;
 
     constructor(
@@ -22,6 +23,10 @@ export class OverviewService {
         this.teams.push(new Team(0, 'Bayern München'));
         this.teams.push(new Team(1, "VfB Stuttgart"));
         this.teams.push(new Team(2, 'Dortmund'));
+    }
+
+    getTeams() {
+        return this.teams;
     }
 
     getTeam(teamId: number): Team {
@@ -38,6 +43,10 @@ export class OverviewService {
 
     deleteGame(game: Game): Observable<any> {
         return this.http.post('http://localhost:53636/api/game/delete.php?id=' + game.id, {});
+    }
+
+    updateGame(game: GameDto) {
+        return this.http.post('http://localhost:53636/api/game/update.php', game);
     }
 
 

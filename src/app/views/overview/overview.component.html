@@ -17,7 +17,9 @@
         <li *ngFor="let game of games">
             <div class="team">
                 <div class="shirt"></div>
-                <div class="team-name">{{ game.firstTeam.name }}</div>
+                <div class="team-name">
+                    <app-team-select [teamId]="game.firstTeam.id" (onSelect)="updateGame(game, 0, $event)"></app-team-select>
+                </div>
             </div>
 
             <div class="goals">
@@ -25,7 +27,9 @@
             </div>
 
             <div class="team">
-                <div class="team-name">{{ game.secondTeam.name }}</div>
+                <div class="team-name">
+                    <app-team-select [teamId]="game.secondTeam.id" (onSelect)="updateGame(game, 1, $event)"></app-team-select>
+                </div>
                 <div class="shirt"></div>
             </div>
 

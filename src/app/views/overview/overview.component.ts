@@ -59,8 +59,8 @@ export class OverviewComponent implements OnInit {
     createNewGame(event: MouseEvent) {
         event.preventDefault();
 
-        const game = new GameDto(0, 1, 0, 0);
-        this.overviewService.createGame(game).subscribe(() => {
+        const gameDto = new GameDto(0, 0, 1, 0, 0);
+        this.overviewService.createGame(gameDto).subscribe(() => {
             this.listGames();
         });
     }
@@ -69,6 +69,26 @@ export class OverviewComponent implements OnInit {
         event.preventDefault();
 
         this.overviewService.deleteGame(game).subscribe(() => {
+            this.listGames();
+        });
+    }
+
+    updateGame(game: Game, toUpdate: number, team: Team) {
+        if (toUpdate === 0) {
+            game.firstTeam = team;
+        } else {
+            game.secondTeam = team;
+        }
+
+        const gameDto = new GameDto(
+            game.id,
+            game.firstTeam.id,
+            game.secondTeam.id,
+            game.firstTeamGoals,
+            game.secondTeamGoals
+        );
+
+        this.overviewService.updateGame(gameDto).subscribe(() => {
             this.listGames();
         });
     }
