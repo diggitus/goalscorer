@@ -3,6 +3,9 @@ import { Player } from 'src/app/model/player';
 import { SoccerPlayer } from 'src/app/model/soccer-player';
 import { Row } from 'src/app/model/row';
 import { FieldCell } from 'src/app/model/field-cell';
+import { ActivatedRoute } from '@angular/router';
+import { Game } from 'src/app/model/game';
+import { OverviewService } from '../overview/overview.service';
 
 @Component({
     selector: 'app-game',
@@ -20,10 +23,25 @@ export class GameComponent {
     private rowsLength = 9;
     private colsLength = 5;
 
-    constructor() {
+    private game: Game;
+
+    constructor(
+        private route: ActivatedRoute,
+        private overviewService: OverviewService
+    ) {
+        const gameId = this.route.snapshot.paramMap.get('id');
+        this.getGame(parseInt(gameId));
+
         this.initPlayers();
         this.initRows();
         this.initSoccerPlayers();
+    }
+
+    private getGame(gameId: number) {
+        this.overviewService.getGame(gameId).subscribe(gameResp => {
+            this.game = this.overviewService.parseGame(gameResp);
+            console.log(this.game);
+        });
     }
 
     private initPlayers() {

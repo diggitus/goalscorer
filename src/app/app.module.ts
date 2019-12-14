@@ -13,7 +13,7 @@ import { TeamSelectComponent } from './team-select/team-select.component';
 
 const routes: Routes = [
   { path: 'overview', component: OverviewComponent },
-  { path: 'game', component: GameComponent },
+  { path: 'game/:id', component: GameComponent },
   { path: '', pathMatch: 'full', redirectTo: '/overview' },
 ]
 

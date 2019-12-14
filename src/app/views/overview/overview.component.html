@@ -34,7 +34,7 @@
             </div>
 
             <div class="game-actions">
-                <a href="#" *ngIf="canPlay(game)" (click)="playGame($event)">Spielen</a>
+                <a href="#" *ngIf="canPlay(game)" (click)="playGame($event, game)">Spielen</a>
                 <a href="#" (click)="deleteGame($event, game)">Löschen</a>
             </div>
 

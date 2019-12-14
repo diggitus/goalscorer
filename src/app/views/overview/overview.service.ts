@@ -9,7 +9,6 @@ import { GameDto } from 'src/app/model/game.dto';
 @Injectable()
 export class OverviewService {
     
-    
     private teams: Array<Team>;
 
     constructor(
@@ -33,8 +32,22 @@ export class OverviewService {
         return this.teams.find(team => team.id === teamId);
     }
 
+    parseGame(gameResp: any): Game {
+        const game = new Game();
+        game.id = gameResp.id;
+        game.firstTeam = this.getTeam(parseInt(gameResp.firstTeam));
+        game.secondTeam = this.getTeam(parseInt(gameResp.secondTeam));
+        game.firstTeamGoals = gameResp.firstTeamGoals;
+        game.secondTeamGoals = gameResp.secondTeamGoals;
+        return game;
+    }
+
     listGames(): Observable<any> {
         return this.http.get('http://localhost:53636/api/game/list.php').pipe(catchError(error => of(null)));
+    }
+
+    getGame(gameId: number): Observable<any> {
+        return this.http.get('http://localhost:53636/api/game/get.php?id=' + gameId);
     }
 
     createGame(game: GameDto): Observable<any> {

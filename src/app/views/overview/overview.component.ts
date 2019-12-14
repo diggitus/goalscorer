@@ -3,6 +3,7 @@ import { Game } from 'src/app/model/game';
 import { Team } from 'src/app/model/team';
 import { OverviewService } from './overview.service';
 import { GameDto } from 'src/app/model/game.dto';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-overview',
@@ -16,7 +17,8 @@ export class OverviewComponent implements OnInit {
     games: Array<Game> | null;
 
     constructor(
-        private overviewService: OverviewService
+        private overviewService: OverviewService,
+        private router: Router
     ) {
         this.selectedTeam = 1;
         this.games = null;
@@ -41,12 +43,7 @@ export class OverviewComponent implements OnInit {
         
         for (let i = 0; i < gamesResp.length; i++) {
             const gameResp = gamesResp[i];
-            const game = new Game();
-            game.id = gameResp.id;
-            game.firstTeam = this.overviewService.getTeam(parseInt(gameResp.firstTeam));
-            game.secondTeam = this.overviewService.getTeam(parseInt(gameResp.secondTeam));
-            game.firstTeamGoals = gameResp.firstTeamGoals;
-            game.secondTeamGoals = gameResp.secondTeamGoals;
+            const game = this.overviewService.parseGame(gameResp);
             games.push(game);
         }
         return games;
@@ -101,7 +98,8 @@ export class OverviewComponent implements OnInit {
         return game.firstTeam.id !== game.secondTeam.id;
     }
 
-    playGame(event: MouseEvent) {
+    playGame(event: MouseEvent, game: Game) {
         event.preventDefault();
+        this.router.navigate(['game', game.id], { queryParams: { team: this.selectedTeam }});
     }
 }
