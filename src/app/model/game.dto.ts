@@ -1,15 +1,17 @@
 export class GameDto {
-    id: number;
-    firstTeam: number;
-    secondTeam: number; 
-    firstTeamGoals: number;
-    secondTeamGoals: number;
+    id: number | null;
+    firstTeam: number | null;
+    secondTeam: number | null; 
+    firstTeamGoals: number | null;
+    secondTeamGoals: number | null;
+    gameState: string | null;
 
-    constructor(id: number, firstTeam: number, secondTeam: number, firstTeamGoals: number, secondTeamGoals: number) {
-        this.id = id;
-        this.firstTeam = firstTeam;
-        this.secondTeam = secondTeam;
-        this.firstTeamGoals = firstTeamGoals;
-        this.secondTeamGoals = secondTeamGoals;
+    constructor() {
+        this.id = null;
+        this.firstTeam = null;
+        this.secondTeam = null;
+        this.firstTeamGoals = null;
+        this.secondTeamGoals = null;
+        this.gameState = null;
     }
 }

@@ -6,6 +6,7 @@ import { FieldCell } from 'src/app/model/field-cell';
 import { ActivatedRoute } from '@angular/router';
 import { Game } from 'src/app/model/game';
 import { OverviewService } from '../overview/overview.service';
+import { GameState } from 'src/app/model/game-state';
 
 @Component({
     selector: 'app-game',
@@ -30,18 +31,40 @@ export class GameComponent {
         private overviewService: OverviewService
     ) {
         const gameId = this.route.snapshot.paramMap.get('id');
-        this.getGame(parseInt(gameId));
+        this.overviewService.getGame(parseInt(gameId)).subscribe(gameResp => {
+            this.initPlayers();
 
-        this.initPlayers();
-        this.initRows();
-        this.initSoccerPlayers();
+            if (gameResp) {
+                this.game = this.overviewService.deserializeGame(gameResp);
+
+                if (this.game.gameState == null) {
+                    this.game.gameState = new GameState();
+                    this.initRows();
+                    this.initSoccerPlayers();
+                } else {
+                    this.rows = this.parseRows(this.game.gameState.rows);
+                }
+            }
+        });
     }
 
-    private getGame(gameId: number) {
-        this.overviewService.getGame(gameId).subscribe(gameResp => {
-            this.game = this.overviewService.parseGame(gameResp);
-            console.log(this.game);
-        });
+    private parseRows(rows: any): Array<Row> {
+        for (let row of rows) {
+            for (let fieldCell of row.fieldCells) {
+                if (fieldCell.soccerPlayer) {
+                    fieldCell.soccerPlayer.player = this.parsePlayer(fieldCell.soccerPlayer.player);
+                }
+            }
+        }
+        return rows;
+    }
+
+    private parsePlayer(player: any): Player {
+        if (player.name == "Player1") {
+            return this.player1;
+        } else {
+            return this.player2;
+        }
     }
 
     private initPlayers() {
@@ -61,13 +84,13 @@ export class GameComponent {
 
         for (let i = 0; i < this.rowsLength; i++) {
             const row = new Row();
-            row.id = i;
+            row.idx = i;
             row.fieldCells = new Array<FieldCell>();
 
             for (let j = 0; j < this.colsLength; j++) {
                 const fieldCell = new FieldCell();
-                fieldCell.row = row;
-                fieldCell.id = j;
+                fieldCell.rowIdx = row.idx;
+                fieldCell.colIdx = j;
                 fieldCell.soccerPlayer = null;
                 fieldCell.disabled = false;
                 fieldCell.highlighted = false;
@@ -75,6 +98,7 @@ export class GameComponent {
             }
             this.rows.push(row);
         }
+        this.game.gameState.rows = this.rows;
     }
 
     private initSoccerPlayers() {
@@ -90,7 +114,7 @@ export class GameComponent {
             const row = this.rows[i];
 
             for (const fieldCell of row.fieldCells) {
-                if (this.isDisabledField(row.id, fieldCell.id)) {
+                if (this.isDisabledField(row.idx, fieldCell.colIdx)) {
                     fieldCell.disabled = true;
                     continue;
                 }
@@ -98,7 +122,8 @@ export class GameComponent {
                 const soccerPlayer = new SoccerPlayer();
                 soccerPlayer.player = this.player1;
                 soccerPlayer.num = soccerNumbers.shift();
-                soccerPlayer.fieldCell = fieldCell;
+                soccerPlayer.rowIdx = fieldCell.rowIdx;
+                soccerPlayer.colIdx = fieldCell.colIdx;
                 soccerPlayer.selected = false;
                 fieldCell.soccerPlayer = soccerPlayer;
             }
@@ -125,7 +150,7 @@ export class GameComponent {
             const row = this.rows[i];
 
             for (const fieldCell of row.fieldCells) {
-                if (this.isDisabledField(row.id, fieldCell.id)) {
+                if (this.isDisabledField(row.idx, fieldCell.colIdx)) {
                     fieldCell.disabled = true;
                     continue;
                 }
@@ -133,15 +158,12 @@ export class GameComponent {
                 const soccerPlayer = new SoccerPlayer();
                 soccerPlayer.player = this.player2;
                 soccerPlayer.num = soccerNumbers.pop();
-                soccerPlayer.fieldCell = fieldCell;
+                soccerPlayer.rowIdx = fieldCell.rowIdx;
+                soccerPlayer.colIdx = fieldCell.colIdx;
                 soccerPlayer.selected = false;
                 fieldCell.soccerPlayer = soccerPlayer;
             }
         }
-    }
-
-    private isGoalKeeper(row: number, col: number): boolean {
-        return (row === 0 && col === 2) || (row === 8 && col === 2);
     }
 
     private isSoccerPlayerAlreadySelected(fieldCell: FieldCell): boolean {
@@ -174,8 +196,9 @@ export class GameComponent {
 
         if (this.selectedSoccerPlayer) {
             if (fieldCell.highlighted) {
-                this.selectedSoccerPlayer.fieldCell.soccerPlayer = null;
-                this.selectedSoccerPlayer.fieldCell = fieldCell;
+                this.removeSoccerPlayerFromFieldCell(this.selectedSoccerPlayer.rowIdx, this.selectedSoccerPlayer.colIdx);
+                this.selectedSoccerPlayer.rowIdx = fieldCell.rowIdx;
+                this.selectedSoccerPlayer.colIdx = fieldCell.colIdx;
                 fieldCell.soccerPlayer = this.selectedSoccerPlayer;
                 this.selectedSoccerPlayer = null;
                 this.resetSoccerPlayerSelection();
@@ -188,6 +211,24 @@ export class GameComponent {
                 this.switchPlayer();
             }
         }
+
+        this.updateGame();
+    }
+
+    private removeSoccerPlayerFromFieldCell(rowIdx: number, colIdx: number) {
+        for (let row of this.rows) {
+            for (let fieldCell of row.fieldCells) {
+                if (fieldCell.rowIdx == rowIdx && fieldCell.colIdx == colIdx) {
+                    fieldCell.soccerPlayer = null;
+                    return;
+                }
+            }
+        }
+    }
+
+    private updateGame() {
+        const gameDto = this.overviewService.serializeGame(this.game);
+        this.overviewService.updateGame(gameDto).subscribe();
     }
 
     private isGameOver(): boolean {
@@ -223,16 +264,16 @@ export class GameComponent {
     }
 
     private showOptions() {
-        const rowId = this.selectedSoccerPlayer.fieldCell.row.id;
-        const colId = this.selectedSoccerPlayer.fieldCell.id;
+        const currentRowIdx = this.selectedSoccerPlayer.rowIdx;
+        const currentColIdx = this.selectedSoccerPlayer.colIdx;
 
-        const selectableRows = this.getSelectableRows(rowId);
-        const selectableCols = this.getSelectableCols(colId);
+        const selectableRowIndexes = this.getSelectableRowIndexes(currentRowIdx);
+        const selectableColIndexes = this.getSelectableColIndexes(currentColIdx);
 
         this.rows.forEach(row => {
             row.fieldCells.forEach(fieldCell => {
-                if (selectableRows.some(rowId => rowId === row.id)) {
-                    if (selectableCols.some(colId => colId === fieldCell.id)) {
+                if (selectableRowIndexes.some(rowIdx => rowIdx === row.idx)) {
+                    if (selectableColIndexes.some(colIdx => colIdx === fieldCell.colIdx)) {
                         if (fieldCell.disabled) return;
                         if (fieldCell.soccerPlayer) return;
 
@@ -243,32 +284,32 @@ export class GameComponent {
         });
     }
 
-    private getSelectableCols(colId): Array<number> {
+    private getSelectableColIndexes(colIdx: number): Array<number> {
         const result = [];
-        result.push(colId);
+        result.push(colIdx);
 
-        if (colId - 1 >= 0) {
-            result.push(colId - 1);
+        if (colIdx - 1 >= 0) {
+            result.push(colIdx - 1);
         }
 
-        if (colId + 1 <= 4) {
-            result.push(colId + 1);
+        if (colIdx + 1 <= 4) {
+            result.push(colIdx + 1);
         }
         return result;
     }
 
-    private getSelectableRows(rowId: number): Array<number> {
+    private getSelectableRowIndexes(rowIdx: number): Array<number> {
         const result = [];
 
         if (this.selectedPlayer === this.player2) {
-            if (rowId - 1 >= 0) {
-                result.push(rowId - 1);
+            if (rowIdx - 1 >= 0) {
+                result.push(rowIdx - 1);
             }
         }
 
         if (this.selectedPlayer === this.player1) {
-            if (rowId + 1 <= 8) {
-                result.push(rowId + 1);
+            if (rowIdx + 1 <= 8) {
+                result.push(rowIdx + 1);
             }
         }
         return result;

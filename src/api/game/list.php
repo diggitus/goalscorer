@@ -24,7 +24,8 @@ if($num > 0){
             "firstTeam" => $firstTeam,
             "secondTeam" => $secondTeam,
             "firstTeamGoals" => $firstTeamGoals,
-            "secondTeamGoals" => $secondTeamGoals
+            "secondTeamGoals" => $secondTeamGoals,
+            "gameState" => $gameState
         );
         array_push($games["games"], $game);
     }

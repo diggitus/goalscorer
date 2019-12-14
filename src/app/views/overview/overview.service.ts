@@ -8,7 +8,7 @@ import { GameDto } from 'src/app/model/game.dto';
 
 @Injectable()
 export class OverviewService {
-    
+
     private teams: Array<Team>;
 
     constructor(
@@ -32,14 +32,26 @@ export class OverviewService {
         return this.teams.find(team => team.id === teamId);
     }
 
-    parseGame(gameResp: any): Game {
+    deserializeGame(gameResp: any): Game {
         const game = new Game();
         game.id = gameResp.id;
         game.firstTeam = this.getTeam(parseInt(gameResp.firstTeam));
         game.secondTeam = this.getTeam(parseInt(gameResp.secondTeam));
         game.firstTeamGoals = gameResp.firstTeamGoals;
         game.secondTeamGoals = gameResp.secondTeamGoals;
+        game.gameState = gameResp.gameState ? JSON.parse(gameResp.gameState) : null;
         return game;
+    }
+
+    serializeGame(game: Game): GameDto {
+        const gameDto = new GameDto()
+        gameDto.id = game.id,
+        gameDto.firstTeam = game.firstTeam.id,
+        gameDto.secondTeam = game.secondTeam.id,
+        gameDto.firstTeamGoals = game.firstTeamGoals,
+        gameDto.secondTeamGoals = game.secondTeamGoals,
+        gameDto.gameState = JSON.stringify(game.gameState);
+        return gameDto;
     }
 
     listGames(): Observable<any> {
@@ -47,7 +59,7 @@ export class OverviewService {
     }
 
     getGame(gameId: number): Observable<any> {
-        return this.http.get('http://localhost:53636/api/game/get.php?id=' + gameId);
+        return this.http.get('http://localhost:53636/api/game/get.php?id=' + gameId).pipe(catchError(error => of(null)));
     }
 
     createGame(game: GameDto): Observable<any> {

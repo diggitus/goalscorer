@@ -43,7 +43,7 @@ export class OverviewComponent implements OnInit {
         
         for (let i = 0; i < gamesResp.length; i++) {
             const gameResp = gamesResp[i];
-            const game = this.overviewService.parseGame(gameResp);
+            const game = this.overviewService.deserializeGame(gameResp);
             games.push(game);
         }
         return games;
@@ -56,7 +56,13 @@ export class OverviewComponent implements OnInit {
     createNewGame(event: MouseEvent) {
         event.preventDefault();
 
-        const gameDto = new GameDto(0, 0, 1, 0, 0);
+        const gameDto = new GameDto();
+        gameDto.id = 0;
+        gameDto.firstTeam = 0;
+        gameDto.secondTeam = 1;
+        gameDto.firstTeamGoals = 0;
+        gameDto.secondTeamGoals = 0;
+        
         this.overviewService.createGame(gameDto).subscribe(() => {
             this.listGames();
         });
@@ -81,14 +87,7 @@ export class OverviewComponent implements OnInit {
             game.secondTeam = team;
         }
 
-        const gameDto = new GameDto(
-            game.id,
-            game.firstTeam.id,
-            game.secondTeam.id,
-            game.firstTeamGoals,
-            game.secondTeamGoals
-        );
-
+        const gameDto = this.overviewService.serializeGame(game);
         this.overviewService.updateGame(gameDto).subscribe(() => {
             this.listGames();
         });

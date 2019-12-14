@@ -19,6 +19,7 @@ $gameEntity->firstTeam = $data->firstTeam;
 $gameEntity->secondTeam = $data->secondTeam;
 $gameEntity->firstTeamGoals = $data->firstTeamGoals;
 $gameEntity->secondTeamGoals = $data->secondTeamGoals;
+$gameEntity->gameState = $data->gameState;
 
 if($gameEntity->create()){
     http_response_code(201);

@@ -5,5 +5,6 @@ export class SoccerPlayer {
   num: number;
   player: Player;
   selected: boolean;
-  fieldCell: FieldCell;
+  rowIdx: number;
+  colIdx: number;
 }

@@ -22,6 +22,7 @@ if($gameEntity->firstTeam != null){
         "secondTeam" =>  $gameEntity->secondTeam,
         "firstTeamGoals" =>  $gameEntity->firstTeamGoals,
         "secondTeamGoals" =>  $gameEntity->secondTeamGoals,
+        "gameState" =>  $gameEntity->gameState
     );
     http_response_code(200);
     echo json_encode($gameEntities);
