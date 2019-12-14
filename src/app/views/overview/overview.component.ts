@@ -68,9 +68,13 @@ export class OverviewComponent implements OnInit {
     deleteGame(event: MouseEvent, game: Game) {
         event.preventDefault();
 
-        this.overviewService.deleteGame(game).subscribe(() => {
-            this.listGames();
-        });
+        const confirmed = confirm("Spiel wirklich löschen?");
+
+        if (confirmed) {
+            this.overviewService.deleteGame(game).subscribe(() => {
+                this.listGames();
+            });
+        }
     }
 
     updateGame(game: Game, toUpdate: number, team: Team) {
