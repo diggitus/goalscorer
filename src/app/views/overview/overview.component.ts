@@ -97,8 +97,11 @@ export class OverviewComponent implements OnInit {
         });
     }
 
+    canPlay(game: Game): boolean {
+        return game.firstTeam.id !== game.secondTeam.id;
+    }
+
     playGame(event: MouseEvent) {
         event.preventDefault();
-        console.log('play game');
     }
 }

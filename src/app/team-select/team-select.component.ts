@@ -24,7 +24,7 @@ export class TeamSelectComponent implements OnInit {
     }
 
     ngOnInit() { 
-        this.teams = this.overviewService.getTeams();
+        this.teams = this.overviewService.getTeams().filter(team => team.id !== this.teamId);
         this.selectedTeam = this.overviewService.getTeam(this.teamId);
     }
 
