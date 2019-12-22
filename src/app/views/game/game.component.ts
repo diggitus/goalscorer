@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Game } from 'src/app/model/game';
 import { OverviewService } from '../overview/overview.service';
 import { GameState } from 'src/app/model/game-state';
+import { filter } from 'rxjs/operators';
 
 @Component({
     selector: 'app-game',
@@ -31,8 +32,12 @@ export class GameComponent {
         private overviewService: OverviewService
     ) {
         const gameId = this.route.snapshot.paramMap.get('id');
+        
         this.overviewService.getGame(parseInt(gameId)).subscribe(gameResp => {
-            this.initPlayers();
+            this.route.queryParams.pipe(filter(params => params.team)).subscribe(params => {
+                const playerId = params.team;
+                this.initPlayers(parseInt(playerId));
+            });
 
             if (gameResp) {
                 this.game = this.overviewService.deserializeGame(gameResp);
@@ -67,7 +72,7 @@ export class GameComponent {
         }
     }
 
-    private initPlayers() {
+    private initPlayers(playerId: number) {
         this.player1 = new Player();
         this.player1.name = "Player1";
         this.player1.goals = 0;
@@ -76,7 +81,7 @@ export class GameComponent {
         this.player2.name = "Player2";
         this.player2.goals = 0;
 
-        this.selectedPlayer = this.player1;
+        this.selectedPlayer = playerId === 1 ? this.player1 : this.player2;
     }
 
     private initRows() {
