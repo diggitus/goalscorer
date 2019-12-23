@@ -3,10 +3,10 @@ import { Player } from 'src/app/model/player';
 import { SoccerPlayer } from 'src/app/model/soccer-player';
 import { Row } from 'src/app/model/row';
 import { FieldCell } from 'src/app/model/field-cell';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterEvent } from '@angular/router';
 import { Game } from 'src/app/model/game';
 import { OverviewService } from '../overview/overview.service';
-import { GameState } from 'src/app/model/game-state';
+import { GameState, State } from 'src/app/model/game-state';
 import { filter } from 'rxjs/operators';
 import { PlayerAssignmentComponent } from 'src/app/player-assignment/player-assignment.component';
 
@@ -21,6 +21,7 @@ export class GameComponent {
 
     player1: Player;
     player2: Player;
+    playerId: number | null;
     activePlayer: Player;
     selectedSoccerPlayer: SoccerPlayer;
 
@@ -39,8 +40,8 @@ export class GameComponent {
         
         this.overviewService.getGame(parseInt(gameId)).subscribe(gameResp => {
             this.route.queryParams.pipe(filter(params => params.player)).subscribe(params => {
-                const playerId = params.player;
-                this.initPlayers(parseInt(playerId));
+                this.playerId = parseInt(params.player);
+                this.initPlayers(this.playerId);
             });
 
             if (gameResp) {
@@ -50,10 +51,31 @@ export class GameComponent {
                     this.game.gameState = new GameState();
                     this.initRows();
                     this.initSoccerPlayers();
+                    this.highlightFields();
                 } else {
                     this.rows = this.parseRows(this.game.gameState.rows);
+                    
+                    if (this.game.gameState.state === State.NEW) {
+                        this.highlightFields();
+                    }
                 }
             }
+        });
+    }
+
+    private highlightFields() {
+        this.rows.forEach(row => {
+            row.fieldCells.forEach(fieldCell => {
+                if (this.playerId === 1) {
+                    if (row.idx >= 1 && row.idx <= 2 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
+                        fieldCell.highlighted = true;
+                    }
+                } else if (this.playerId === 2) {
+                    if (row.idx >= 6 && row.idx <= 7 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
+                        fieldCell.highlighted = true;
+                    }
+                }
+            });
         });
     }
 
@@ -160,43 +182,45 @@ export class GameComponent {
             return;
         }
 
-        this.playerAssignment.showDialog(this.activePlayer, this.rows, fieldCell);
-
-        if (this.isSoccerPlayerAlreadySelected(fieldCell)) {
-            this.selectedSoccerPlayer = null;
-            fieldCell.soccerPlayer.selected = false;
-            this.resetOptions();
-            return;
-        }
-
-        if (fieldCell.soccerPlayer) {
-            if (fieldCell.soccerPlayer.player !== this.activePlayer) {
+        if (this.game.gameState.state === State.NEW) {
+            this.playerAssignment.showDialog(this.activePlayer, this.rows, fieldCell);
+        } else {
+            if (this.isSoccerPlayerAlreadySelected(fieldCell)) {
+                this.selectedSoccerPlayer = null;
+                fieldCell.soccerPlayer.selected = false;
+                this.resetOptions();
                 return;
             }
-
-            this.selectedSoccerPlayer = fieldCell.soccerPlayer;
-            this.resetSoccerPlayerSelection();
-            fieldCell.soccerPlayer.selected = true;
-            this.resetOptions();
-            this.showOptions();
-            return;
-        }
-
-        if (this.selectedSoccerPlayer) {
-            if (fieldCell.highlighted) {
-                this.removeSoccerPlayerFromFieldCell(this.selectedSoccerPlayer.rowIdx, this.selectedSoccerPlayer.colIdx);
-                this.selectedSoccerPlayer.rowIdx = fieldCell.rowIdx;
-                this.selectedSoccerPlayer.colIdx = fieldCell.colIdx;
-                fieldCell.soccerPlayer = this.selectedSoccerPlayer;
-                this.selectedSoccerPlayer = null;
-                this.resetSoccerPlayerSelection();
-                this.resetOptions();
-
-                if (this.isGameOver()) {
-                    alert(this.activePlayer.name);
+            
+            if (fieldCell.soccerPlayer) {
+                if (fieldCell.soccerPlayer.player !== this.activePlayer) {
                     return;
                 }
-                this.switchPlayer();
+                
+                this.selectedSoccerPlayer = fieldCell.soccerPlayer;
+                this.resetSoccerPlayerSelection();
+                fieldCell.soccerPlayer.selected = true;
+                this.resetOptions();
+                this.showOptions();
+                return;
+            }
+            
+            if (this.selectedSoccerPlayer) {
+                if (fieldCell.highlighted) {
+                    this.removeSoccerPlayerFromFieldCell(this.selectedSoccerPlayer.rowIdx, this.selectedSoccerPlayer.colIdx);
+                    this.selectedSoccerPlayer.rowIdx = fieldCell.rowIdx;
+                    this.selectedSoccerPlayer.colIdx = fieldCell.colIdx;
+                    fieldCell.soccerPlayer = this.selectedSoccerPlayer;
+                    this.selectedSoccerPlayer = null;
+                    this.resetSoccerPlayerSelection();
+                    this.resetOptions();
+                    
+                    if (this.isGameOver()) {
+                        alert(this.activePlayer.name);
+                        return;
+                    }
+                    this.switchPlayer();
+                }
             }
         }
 
