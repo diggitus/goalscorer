@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { OverviewService } from './views/overview/overview.service';
 import { HttpClientModule } from '@angular/common/http';
 import { TeamSelectComponent } from './team-select/team-select.component';
+import { PlayerAssignmentComponent } from './player-assignment/player-assignment.component';
 
 const routes: Routes = [
   { path: 'overview', component: OverviewComponent },
@@ -29,7 +30,8 @@ const routes: Routes = [
     AppComponent,
     OverviewComponent,
     GameComponent,
-    TeamSelectComponent
+    TeamSelectComponent,
+    PlayerAssignmentComponent
   ],
   providers: [
     OverviewService

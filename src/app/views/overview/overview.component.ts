@@ -99,6 +99,6 @@ export class OverviewComponent implements OnInit {
 
     playGame(event: MouseEvent, game: Game) {
         event.preventDefault();
-        this.router.navigate(['game', game.id], { queryParams: { team: this.selectedTeam }});
+        this.router.navigate(['game', game.id], { queryParams: { player: this.selectedTeam }});
     }
 }

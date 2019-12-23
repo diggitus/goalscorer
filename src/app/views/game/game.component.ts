@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { Player } from 'src/app/model/player';
 import { SoccerPlayer } from 'src/app/model/soccer-player';
 import { Row } from 'src/app/model/row';
@@ -8,6 +8,7 @@ import { Game } from 'src/app/model/game';
 import { OverviewService } from '../overview/overview.service';
 import { GameState } from 'src/app/model/game-state';
 import { filter } from 'rxjs/operators';
+import { PlayerAssignmentComponent } from 'src/app/player-assignment/player-assignment.component';
 
 @Component({
     selector: 'app-game',
@@ -15,9 +16,12 @@ import { filter } from 'rxjs/operators';
     styleUrls: ['game.component.scss']
 })
 export class GameComponent {
+
+    @ViewChild(PlayerAssignmentComponent, {static: false}) playerAssignment: PlayerAssignmentComponent;
+
     player1: Player;
     player2: Player;
-    selectedPlayer: Player;
+    activePlayer: Player;
     selectedSoccerPlayer: SoccerPlayer;
 
     rows: Array<Row>;
@@ -34,8 +38,8 @@ export class GameComponent {
         const gameId = this.route.snapshot.paramMap.get('id');
         
         this.overviewService.getGame(parseInt(gameId)).subscribe(gameResp => {
-            this.route.queryParams.pipe(filter(params => params.team)).subscribe(params => {
-                const playerId = params.team;
+            this.route.queryParams.pipe(filter(params => params.player)).subscribe(params => {
+                const playerId = params.player;
                 this.initPlayers(parseInt(playerId));
             });
 
@@ -45,7 +49,6 @@ export class GameComponent {
                 if (this.game.gameState == null) {
                     this.game.gameState = new GameState();
                     this.initRows();
-                    this.initSoccerPlayers();
                 } else {
                     this.rows = this.parseRows(this.game.gameState.rows);
                 }
@@ -81,7 +84,7 @@ export class GameComponent {
         this.player2.name = "Player2";
         this.player2.goals = 0;
 
-        this.selectedPlayer = playerId === 1 ? this.player1 : this.player2;
+        this.activePlayer = playerId === 1 ? this.player1 : this.player2;
     }
 
     private initRows() {
@@ -106,36 +109,10 @@ export class GameComponent {
         this.game.gameState.rows = this.rows;
     }
 
-    private initSoccerPlayers() {
-        this.initPlayerOneSoccerPlayers();
-        this.initPlayerTwoSoccerPlayers();
-        this.selectedSoccerPlayer = null;
-    }
+    private isDisabledField(fieldCell: FieldCell): boolean {
+        const row = fieldCell.rowIdx;
+        const col = fieldCell.colIdx;
 
-    private initPlayerOneSoccerPlayers() {
-        const soccerNumbers = [1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6];
-
-        for (let i = 0; i <= 2; i++) {
-            const row = this.rows[i];
-
-            for (const fieldCell of row.fieldCells) {
-                if (this.isDisabledField(row.idx, fieldCell.colIdx)) {
-                    fieldCell.disabled = true;
-                    continue;
-                }
-
-                const soccerPlayer = new SoccerPlayer();
-                soccerPlayer.player = this.player1;
-                soccerPlayer.num = soccerNumbers.shift();
-                soccerPlayer.rowIdx = fieldCell.rowIdx;
-                soccerPlayer.colIdx = fieldCell.colIdx;
-                soccerPlayer.selected = false;
-                fieldCell.soccerPlayer = soccerPlayer;
-            }
-        }
-    }
-
-    private isDisabledField(row: number, col: number): boolean {
         return (
             (row === 0 && col === 0) ||
             (row === 0 && col === 1) ||
@@ -148,29 +125,6 @@ export class GameComponent {
         );
     }
 
-    private initPlayerTwoSoccerPlayers() {
-        const soccerNumbers = [1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6];
-
-        for (let i = 6; i <= 8; i++) {
-            const row = this.rows[i];
-
-            for (const fieldCell of row.fieldCells) {
-                if (this.isDisabledField(row.idx, fieldCell.colIdx)) {
-                    fieldCell.disabled = true;
-                    continue;
-                }
-
-                const soccerPlayer = new SoccerPlayer();
-                soccerPlayer.player = this.player2;
-                soccerPlayer.num = soccerNumbers.pop();
-                soccerPlayer.rowIdx = fieldCell.rowIdx;
-                soccerPlayer.colIdx = fieldCell.colIdx;
-                soccerPlayer.selected = false;
-                fieldCell.soccerPlayer = soccerPlayer;
-            }
-        }
-    }
-
     private isSoccerPlayerAlreadySelected(fieldCell: FieldCell): boolean {
         return (
             this.selectedSoccerPlayer &&
@@ -179,6 +133,12 @@ export class GameComponent {
     }
 
     onFieldCellClick(fieldCell: FieldCell) {
+        if (this.isDisabledField(fieldCell)) {
+            return;
+        }
+
+        this.playerAssignment.showDialog(this.activePlayer, this.rows, fieldCell);
+
         if (this.isSoccerPlayerAlreadySelected(fieldCell)) {
             this.selectedSoccerPlayer = null;
             fieldCell.soccerPlayer.selected = false;
@@ -187,7 +147,7 @@ export class GameComponent {
         }
 
         if (fieldCell.soccerPlayer) {
-            if (fieldCell.soccerPlayer.player !== this.selectedPlayer) {
+            if (fieldCell.soccerPlayer.player !== this.activePlayer) {
                 return;
             }
 
@@ -210,7 +170,7 @@ export class GameComponent {
                 this.resetOptions();
 
                 if (this.isGameOver()) {
-                    alert(this.selectedPlayer.name);
+                    alert(this.activePlayer.name);
                     return;
                 }
                 this.switchPlayer();
@@ -306,13 +266,13 @@ export class GameComponent {
     private getSelectableRowIndexes(rowIdx: number): Array<number> {
         const result = [];
 
-        if (this.selectedPlayer === this.player2) {
+        if (this.activePlayer === this.player2) {
             if (rowIdx - 1 >= 0) {
                 result.push(rowIdx - 1);
             }
         }
 
-        if (this.selectedPlayer === this.player1) {
+        if (this.activePlayer === this.player1) {
             if (rowIdx + 1 <= 8) {
                 result.push(rowIdx + 1);
             }
@@ -326,7 +286,7 @@ export class GameComponent {
     }
 
     private switchPlayer() {
-        this.selectedPlayer =
-            this.selectedPlayer === this.player1 ? this.player2 : this.player1;
+        this.activePlayer =
+            this.activePlayer === this.player1 ? this.player2 : this.player1;
     }
 }

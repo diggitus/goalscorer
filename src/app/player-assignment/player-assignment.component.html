@@ -1,0 +1,9 @@
+<div class="player-assignment" *ngIf="visible">
+    <ul>
+        <li *ngFor="let availableSoccerNumber of availableSoccerNumbers" (click)="onSelect(availableSoccerNumber)">
+            {{ availableSoccerNumber }}
+        </li>
+    </ul>
+
+    <button type="text" (click)="onCancel($event)">Abbrechen</button>
+</div>

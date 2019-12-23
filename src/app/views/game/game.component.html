@@ -1,5 +1,5 @@
-<div class="game" *ngIf="selectedPlayer">
-    <div>{{ selectedPlayer.name }}</div>
+<div class="game" *ngIf="activePlayer">
+    <div>{{ activePlayer.name }}</div>
     <button type="text" (click)="onOK()">OK</button>
 
     <div class="row" *ngFor="let row of rows">
@@ -13,4 +13,6 @@
                 (click)="onFieldCellClick(fieldCell)"></div>
         </ng-container>
     </div>
+
+    <app-player-assignment></app-player-assignment>
 </div>
