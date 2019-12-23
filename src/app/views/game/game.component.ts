@@ -49,11 +49,30 @@ export class GameComponent {
                 if (this.game.gameState == null) {
                     this.game.gameState = new GameState();
                     this.initRows();
+                    this.initSoccerPlayers();
                 } else {
                     this.rows = this.parseRows(this.game.gameState.rows);
                 }
             }
         });
+    }
+
+    private initSoccerPlayers() {
+        const goalkeeper1 = new SoccerPlayer();
+        goalkeeper1.player = this.player1;
+        goalkeeper1.num = 1;
+        goalkeeper1.rowIdx = 0;
+        goalkeeper1.colIdx = 2;
+        goalkeeper1.selected = false;
+        this.rows[0].fieldCells[2].soccerPlayer = goalkeeper1;
+
+        const goalkeeper2 = new SoccerPlayer();
+        goalkeeper2.player = this.player2;
+        goalkeeper2.num = 1;
+        goalkeeper2.rowIdx = 8;
+        goalkeeper2.colIdx = 2;
+        goalkeeper2.selected = false;
+        this.rows[8].fieldCells[2].soccerPlayer = goalkeeper2;
     }
 
     private parseRows(rows: any): Array<Row> {
