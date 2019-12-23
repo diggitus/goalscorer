@@ -189,6 +189,15 @@ export class GameComponent {
             (fieldCell.rowIdx === 8 && fieldCell.colIdx === 2)
     }
 
+    onReady() {
+        if (this.playerId === 1) {
+            this.game.gameState.readyPlayerOne = true;
+        } else if (this.playerId === 2) {
+            this.game.gameState.readyPlayerTwo = true;
+        }
+        this.updateGame();
+    }
+
     onFieldCellClick(fieldCell: FieldCell) {
         if (this.isDisabledField(fieldCell)) {
             return;

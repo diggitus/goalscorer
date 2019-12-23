@@ -2,6 +2,8 @@
     <div>{{ activePlayer.name }}</div>
     <button type="text" (click)="onOK()">OK</button>
 
+    <button type="text" (click)="onReady()">Fertig!</button>
+
     <div class="row" *ngFor="let row of rows">
         <ng-container *ngFor="let fieldCell of row.fieldCells">
             <div *ngIf="fieldCell.soccerPlayer" class="field-cell soccer-player"
