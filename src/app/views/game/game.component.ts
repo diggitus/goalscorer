@@ -132,6 +132,10 @@ export class GameComponent {
         );
     }
 
+    onSoccerPlayerAssigned() {
+        this.updateGame();
+    }
+
     onFieldCellClick(fieldCell: FieldCell) {
         if (this.isDisabledField(fieldCell)) {
             return;

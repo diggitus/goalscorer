@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { FieldCell } from '../model/field-cell';
 import { SoccerPlayer } from '../model/soccer-player';
 import { Player } from '../model/player';
@@ -11,6 +11,8 @@ import { Row } from '../model/row';
 })
 export class PlayerAssignmentComponent {
     
+    @Output() select: EventEmitter<any> | null;
+
     visible: boolean;
     availableSoccerNumbers: Array<number>;
 
@@ -19,6 +21,7 @@ export class PlayerAssignmentComponent {
     private fieldCell: FieldCell;
     
     constructor() {
+        this.select = new EventEmitter<any>();
         this.visible = false;
         this.soccerNumbers = [1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6];
      }
@@ -53,6 +56,7 @@ export class PlayerAssignmentComponent {
         this.fieldCell.soccerPlayer = soccerPlayer;
         
         this.visible = false;
+        this.select.emit();
     }
 
     onCancel(event: Event) {
