@@ -66,17 +66,24 @@ export class GameComponent {
     private highlightFields() {
         this.rows.forEach(row => {
             row.fieldCells.forEach(fieldCell => {
-                if (this.playerId === 1) {
-                    if (row.idx >= 1 && row.idx <= 2 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
-                        fieldCell.highlighted = true;
-                    }
-                } else if (this.playerId === 2) {
-                    if (row.idx >= 6 && row.idx <= 7 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
-                        fieldCell.highlighted = true;
-                    }
+                if (this.isSelectableField(fieldCell)) {
+                    fieldCell.highlighted = true;
                 }
             });
         });
+    }
+
+    private isSelectableField(fieldCell): boolean {
+        if (this.playerId === 1) {
+            if (fieldCell.rowIdx >= 1 && fieldCell.rowIdx <= 2 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
+                return true;
+            }
+        } else if (this.playerId === 2) {
+            if (fieldCell.rowIdx >= 6 && fieldCell.rowIdx <= 7 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private initSoccerPlayers() {
@@ -188,11 +195,13 @@ export class GameComponent {
         }
 
         if (this.game.gameState.state === State.NEW) {
-            this.playerAssignment.showDialog(this.activePlayer, this.rows, fieldCell);
-
             if (fieldCell.soccerPlayer) {
                 if (!this.isGoalkeeper(fieldCell)) {
                     fieldCell.soccerPlayer = null;
+                }
+            } else {
+                if (this.isSelectableField(fieldCell)) {
+                    this.playerAssignment.showDialog(this.activePlayer, this.rows, fieldCell);
                 }
             }
         } else {
