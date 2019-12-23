@@ -177,6 +177,11 @@ export class GameComponent {
         this.updateGame();
     }
 
+    private isGoalkeeper(fieldCell: FieldCell): boolean {
+        return (fieldCell.rowIdx === 0 && fieldCell.colIdx === 2) ||
+            (fieldCell.rowIdx === 8 && fieldCell.colIdx === 2)
+    }
+
     onFieldCellClick(fieldCell: FieldCell) {
         if (this.isDisabledField(fieldCell)) {
             return;
@@ -184,6 +189,12 @@ export class GameComponent {
 
         if (this.game.gameState.state === State.NEW) {
             this.playerAssignment.showDialog(this.activePlayer, this.rows, fieldCell);
+
+            if (fieldCell.soccerPlayer) {
+                if (!this.isGoalkeeper(fieldCell)) {
+                    fieldCell.soccerPlayer = null;
+                }
+            }
         } else {
             if (this.isSoccerPlayerAlreadySelected(fieldCell)) {
                 this.selectedSoccerPlayer = null;
