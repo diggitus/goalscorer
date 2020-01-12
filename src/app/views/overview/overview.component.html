@@ -1,34 +1,34 @@
 <div class="overview">
     <h1>Goal Scorer</h1>
 
-    <div class="team-selection">
-        <div class="team">
-            <i *ngIf="selectedTeam === 1" class="ball"></i>
-            <span (click)="onSelectTeam(1)">Mannschaft 1</span>
+    <div class="player-selection">
+        <div class="player">
+            <i *ngIf="selectedPlayer === 0" class="ball"></i>
+            <span (click)="onSelectPlayer(0)">Mannschaft 1</span>
         </div>
 
-        <div class="team">
-            <span (click)="onSelectTeam(2)">Mannschaft 2</span>
-            <i *ngIf="selectedTeam === 2" class="ball"></i>
+        <div class="player">
+            <span (click)="onSelectPlayer(1)">Mannschaft 2</span>
+            <i *ngIf="selectedPlayer === 1" class="ball"></i>
         </div>
     </div>
 
-    <ul class="games" *ngIf="games">
+    <ul class="games" *ngIf="games && games.length > 0">
         <li *ngFor="let game of games">
             <div class="team">
                 <div class="shirt"></div>
                 <div class="team-name">
-                    <app-team-select [teamId]="game.firstTeam.id" (onSelect)="updateGame(game, 0, $event)"></app-team-select>
+                    <app-team-select [player]="game.gameState.players[0]" (onSelect)="updateGame(game)"></app-team-select>
                 </div>
             </div>
 
             <div class="goals">
-                <span>{{ game.firstTeamGoals }} : {{ game.secondTeamGoals }}</span>
+                <span>{{ game.gameState.players[0].goals }} : {{ game.gameState.players[1].goals }}</span>
             </div>
 
             <div class="team">
                 <div class="team-name">
-                    <app-team-select [teamId]="game.secondTeam.id" (onSelect)="updateGame(game, 1, $event)"></app-team-select>
+                    <app-team-select [player]="game.gameState.players[1]" (onSelect)="updateGame(game)"></app-team-select>
                 </div>
                 <div class="shirt"></div>
             </div>

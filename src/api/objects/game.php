@@ -45,7 +45,7 @@ class Game {
         $this->secondTeam=htmlspecialchars(strip_tags($this->secondTeam));
         $this->firstTeamGoals=htmlspecialchars(strip_tags($this->firstTeamGoals));
         $this->secondTeamGoals=htmlspecialchars(strip_tags($this->secondTeamGoals));
-        $this->gameState=htmlspecialchars(strip_tags($this->gameState));
+        $this->gameState=$this->gameState;
      
         // bind values
         $stmt->bindParam(":firstTeam", $this->firstTeam);

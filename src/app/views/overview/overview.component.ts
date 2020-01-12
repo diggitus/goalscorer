@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Game } from 'src/app/model/game';
-import { Team } from 'src/app/model/team';
 import { OverviewService } from './overview.service';
 import { GameDto } from 'src/app/model/game.dto';
 import { Router } from '@angular/router';
+import { GameState } from 'src/app/model/game-state';
+import { Player } from 'src/app/model/player';
+import { SoccerPlayer } from 'src/app/model/soccer-player';
 
 @Component({
     selector: 'app-overview',
@@ -13,14 +15,14 @@ import { Router } from '@angular/router';
 
 export class OverviewComponent implements OnInit {
 
-    selectedTeam: number;
+    selectedPlayer: number;
     games: Array<Game> | null;
 
     constructor(
         private overviewService: OverviewService,
         private router: Router
     ) {
-        this.selectedTeam = 1;
+        this.selectedPlayer = 0;
         this.games = null;
     }
 
@@ -49,8 +51,8 @@ export class OverviewComponent implements OnInit {
         return games;
     }
 
-    onSelectTeam(teamId: number) {
-        this.selectedTeam = teamId;
+    onSelectPlayer(playerId: number) {
+        this.selectedPlayer = playerId;
     }
 
     createNewGame(event: MouseEvent) {
@@ -62,10 +64,59 @@ export class OverviewComponent implements OnInit {
         gameDto.secondTeam = 1;
         gameDto.firstTeamGoals = 0;
         gameDto.secondTeamGoals = 0;
+
+        const gameState = this.initGameState();
+        gameDto.gameState = JSON.stringify(gameState);
         
         this.overviewService.createGame(gameDto).subscribe(() => {
             this.listGames();
         });
+    }
+
+    private initGameState(): GameState {
+        const gameState = new GameState();
+        gameState.players.push(this.initPlayer(0, 'Player1'));
+        gameState.players.push(this.initPlayer(1, 'Player2'));
+        this.chooseActivePlayer(gameState.players);
+        return gameState;
+    }
+
+    private chooseActivePlayer(players: Array<Player>) {
+        players[0].active = true; // can be random
+    }
+
+    private initPlayer(id: number, name: string): Player {
+        const player = new Player();
+        player.id = id;
+        player.name = name;
+        player.goals = 0;
+        player.soccerPlayers = this.initSoccerPlayers(id);
+        player.team = this.overviewService.getTeams()[0];
+        player.lastActivityOn = null;
+        player.active = false;
+        player.ready = false;
+        return player;
+    }
+
+    private initSoccerPlayers(playerId: number): Array<SoccerPlayer> {
+        const soccerNumbers = [1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6];
+        const soccerPlayers = new Array<SoccerPlayer>();
+
+        soccerNumbers.forEach(soccerNumber => {
+            const soccerPlayer = new SoccerPlayer();
+            soccerPlayer.num = soccerNumber;
+            soccerPlayer.playerId = playerId;
+
+            if (playerId === 0 && soccerNumber === 1) {
+                soccerPlayer.rowIdx = 0;
+                soccerPlayer.colIdx = 2;
+            } else if (playerId === 1 && soccerNumber === 1) {
+                soccerPlayer.rowIdx = 8;
+                soccerPlayer.colIdx = 2;
+            }
+            soccerPlayers.push(soccerPlayer);
+        });
+        return soccerPlayers;
     }
 
     deleteGame(event: MouseEvent, game: Game) {
@@ -80,13 +131,7 @@ export class OverviewComponent implements OnInit {
         }
     }
 
-    updateGame(game: Game, toUpdate: number, team: Team) {
-        if (toUpdate === 0) {
-            game.firstTeam = team;
-        } else {
-            game.secondTeam = team;
-        }
-
+    updateGame(game: Game) {
         const gameDto = this.overviewService.serializeGame(game);
         this.overviewService.updateGame(gameDto).subscribe(() => {
             this.listGames();
@@ -94,11 +139,11 @@ export class OverviewComponent implements OnInit {
     }
 
     canPlay(game: Game): boolean {
-        return game.firstTeam.id !== game.secondTeam.id;
+        return game.gameState.players[0].team.id !== game.gameState.players[1].team.id;
     }
 
     playGame(event: MouseEvent, game: Game) {
         event.preventDefault();
-        this.router.navigate(['game', game.id], { queryParams: { player: this.selectedTeam }});
+        this.router.navigate(['game', game.id], { queryParams: { player: this.selectedPlayer }});
     }
 }

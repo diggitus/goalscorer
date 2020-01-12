@@ -14,45 +14,32 @@ export class PlayerAssignmentComponent {
     @Output() select: EventEmitter<any> | null;
 
     visible: boolean;
-    availableSoccerNumbers: Array<number>;
+    unassignedSoccerPlayers: Array<SoccerPlayer>;
 
-    private soccerNumbers: Array<number>;
     private player: Player;
     private fieldCell: FieldCell;
     
     constructor() {
         this.select = new EventEmitter<any>();
         this.visible = false;
-        this.soccerNumbers = [1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6];
      }
 
-    showDialog(player: Player, rows: Array<Row>, fieldCell: FieldCell) {
+    showDialog(player: Player, fieldCell: FieldCell) {
         this.fieldCell = fieldCell;
         this.player = player;
-        const usedSoccerNumbers = rows
-            .map(row => row.fieldCells
-                .filter(fieldCell => fieldCell.soccerPlayer != null && fieldCell.soccerPlayer.player.name === player.name)
-                .map(fieldCell => fieldCell.soccerPlayer.num)
-            ).reduce((prev, cur) => prev.concat(cur), []);
-
-        this.soccerNumbers = [1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6];
-            
-        usedSoccerNumbers.forEach(usedSoccerNumber => {
-                const idx = this.soccerNumbers.indexOf(usedSoccerNumber);
-                this.soccerNumbers.splice(idx, 1);
-            });
-
-        this.availableSoccerNumbers = this.soccerNumbers;
+        this.unassignedSoccerPlayers = this.player.soccerPlayers
+            .filter(soccerPlayer => soccerPlayer.rowIdx == null && soccerPlayer.colIdx == null)
         this.visible = true;
     }
 
-    onSelect(availableSoccerNumber: number) {
-        const soccerPlayer = new SoccerPlayer();
-        soccerPlayer.player = this.player;
-        soccerPlayer.num = availableSoccerNumber;
+    refresh() {
+        this.unassignedSoccerPlayers = this.player.soccerPlayers
+            .filter(soccerPlayer => soccerPlayer.rowIdx == null && soccerPlayer.colIdx == null)
+    }
+
+    onSelect(soccerPlayer: SoccerPlayer) {
         soccerPlayer.rowIdx = this.fieldCell.rowIdx;
         soccerPlayer.colIdx = this.fieldCell.colIdx;
-        soccerPlayer.selected = false;
         this.fieldCell.soccerPlayer = soccerPlayer;
         
         this.visible = false;

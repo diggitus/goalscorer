@@ -1,7 +1,7 @@
 <div class="player-assignment" *ngIf="visible">
     <ul>
-        <li *ngFor="let availableSoccerNumber of availableSoccerNumbers" (click)="onSelect(availableSoccerNumber)">
-            {{ availableSoccerNumber }}
+        <li *ngFor="let soccerPlayer of unassignedSoccerPlayers" (click)="onSelect(soccerPlayer)">
+            {{ soccerPlayer.num }}
         </li>
     </ul>
 

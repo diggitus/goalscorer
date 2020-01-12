@@ -19,10 +19,7 @@ export class GameComponent {
 
     @ViewChild(PlayerAssignmentComponent, {static: false}) playerAssignment: PlayerAssignmentComponent;
 
-    player1: Player;
-    player2: Player;
     playerId: number | null;
-    activePlayer: Player;
     selectedSoccerPlayer: SoccerPlayer;
 
     rows: Array<Row>;
@@ -39,25 +36,18 @@ export class GameComponent {
         const gameId = this.route.snapshot.paramMap.get('id');
         
         this.overviewService.getGame(parseInt(gameId)).subscribe(gameResp => {
-            this.route.queryParams.pipe(filter(params => params.player)).subscribe(params => {
-                this.playerId = parseInt(params.player);
-                this.initPlayers(this.playerId);
-            });
-
             if (gameResp) {
                 this.game = this.overviewService.deserializeGame(gameResp);
 
-                if (this.game.gameState == null) {
-                    this.game.gameState = new GameState();
-                    this.initRows();
-                    this.initSoccerPlayers();
+                this.route.queryParams.pipe(filter(params => params.player)).subscribe(params => {
+                    this.playerId = parseInt(params.player);
+                });
+
+                this.initRows();
+                this.initSoccerPlayers(this.game.gameState);
+                
+                if (this.game.gameState.state === State.NEW) {
                     this.highlightFields();
-                } else {
-                    this.rows = this.parseRows(this.game.gameState.rows);
-                    
-                    if (this.game.gameState.state === State.NEW) {
-                        this.highlightFields();
-                    }
                 }
             }
         });
@@ -74,65 +64,16 @@ export class GameComponent {
     }
 
     private isSelectableField(fieldCell): boolean {
-        if (this.playerId === 1) {
+        if (this.playerId === 0) {
             if (fieldCell.rowIdx >= 1 && fieldCell.rowIdx <= 2 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
                 return true;
             }
-        } else if (this.playerId === 2) {
+        } else if (this.playerId === 1) {
             if (fieldCell.rowIdx >= 6 && fieldCell.rowIdx <= 7 && fieldCell.colIdx >= 0 && fieldCell.colIdx <= 4) {
                 return true;
             }
         }
         return false;
-    }
-
-    private initSoccerPlayers() {
-        const goalkeeper1 = new SoccerPlayer();
-        goalkeeper1.player = this.player1;
-        goalkeeper1.num = 1;
-        goalkeeper1.rowIdx = 0;
-        goalkeeper1.colIdx = 2;
-        goalkeeper1.selected = false;
-        this.rows[0].fieldCells[2].soccerPlayer = goalkeeper1;
-
-        const goalkeeper2 = new SoccerPlayer();
-        goalkeeper2.player = this.player2;
-        goalkeeper2.num = 1;
-        goalkeeper2.rowIdx = 8;
-        goalkeeper2.colIdx = 2;
-        goalkeeper2.selected = false;
-        this.rows[8].fieldCells[2].soccerPlayer = goalkeeper2;
-    }
-
-    private parseRows(rows: any): Array<Row> {
-        for (let row of rows) {
-            for (let fieldCell of row.fieldCells) {
-                if (fieldCell.soccerPlayer) {
-                    fieldCell.soccerPlayer.player = this.parsePlayer(fieldCell.soccerPlayer.player);
-                }
-            }
-        }
-        return rows;
-    }
-
-    private parsePlayer(player: any): Player {
-        if (player.name == "Player1") {
-            return this.player1;
-        } else {
-            return this.player2;
-        }
-    }
-
-    private initPlayers(playerId: number) {
-        this.player1 = new Player();
-        this.player1.name = "Player1";
-        this.player1.goals = 0;
-
-        this.player2 = new Player();
-        this.player2.name = "Player2";
-        this.player2.goals = 0;
-
-        this.activePlayer = playerId === 1 ? this.player1 : this.player2;
     }
 
     private initRows() {
@@ -147,14 +88,27 @@ export class GameComponent {
                 const fieldCell = new FieldCell();
                 fieldCell.rowIdx = row.idx;
                 fieldCell.colIdx = j;
-                fieldCell.soccerPlayer = null;
                 fieldCell.disabled = false;
                 fieldCell.highlighted = false;
+                fieldCell.soccerPlayer = null;
                 row.fieldCells.push(fieldCell);
             }
             this.rows.push(row);
         }
-        this.game.gameState.rows = this.rows;
+    }
+
+    private initSoccerPlayers(gameState: GameState) {
+        gameState.players.forEach(player => {
+            player.soccerPlayers.forEach(soccerPlayer => {
+                const rowIdx = soccerPlayer.rowIdx;
+                const colIdx = soccerPlayer.colIdx;
+    
+                if (rowIdx != null && colIdx != null) {
+                    soccerPlayer.playerId = player.id;
+                    this.rows[rowIdx].fieldCells[colIdx].soccerPlayer = soccerPlayer;
+                }
+            });
+        });
     }
 
     private isDisabledField(fieldCell: FieldCell): boolean {
@@ -190,11 +144,7 @@ export class GameComponent {
     }
 
     onReady() {
-        if (this.playerId === 1) {
-            this.game.gameState.readyPlayerOne = true;
-        } else if (this.playerId === 2) {
-            this.game.gameState.readyPlayerTwo = true;
-        }
+        this.game.gameState.players[this.playerId].ready = true;
         this.updateGame();
     }
 
@@ -205,12 +155,16 @@ export class GameComponent {
 
         if (this.game.gameState.state === State.NEW) {
             if (fieldCell.soccerPlayer) {
-                if (!this.isGoalkeeper(fieldCell)) {
+                // delete soccer player on that position
+                if (this.isSelectableField(fieldCell) && !this.isGoalkeeper(fieldCell)) {
+                    fieldCell.soccerPlayer.rowIdx = null;
+                    fieldCell.soccerPlayer.colIdx = null;
                     fieldCell.soccerPlayer = null;
+                    this.playerAssignment.refresh();
                 }
             } else {
                 if (this.isSelectableField(fieldCell)) {
-                    this.playerAssignment.showDialog(this.activePlayer, this.rows, fieldCell);
+                    this.playerAssignment.showDialog(this.game.gameState.players[this.playerId], fieldCell);
                 }
             }
         } else {
@@ -222,7 +176,7 @@ export class GameComponent {
             }
             
             if (fieldCell.soccerPlayer) {
-                if (fieldCell.soccerPlayer.player !== this.activePlayer) {
+                if (fieldCell.soccerPlayer.playerId !== this.playerId) {
                     return;
                 }
                 
@@ -245,10 +199,9 @@ export class GameComponent {
                     this.resetOptions();
                     
                     if (this.isGameOver()) {
-                        alert(this.activePlayer.name);
+                        alert(this.game.gameState.players[this.playerId].name);
                         return;
                     }
-                    this.switchPlayer();
                 }
             }
         }
@@ -274,14 +227,14 @@ export class GameComponent {
 
     private isGameOver(): boolean {
         let fieldCell = this.rows[0].fieldCells[2];
-        if (fieldCell.soccerPlayer != null && fieldCell.soccerPlayer.player === this.player2) {
-            this.player2.goals++;
+        if (fieldCell.soccerPlayer != null && fieldCell.soccerPlayer.playerId === this.game.gameState.players[1].id) {
+            this.game.gameState.players[1].goals++;
             return true;
         }
 
         fieldCell = this.rows[8].fieldCells[2];
-        if (fieldCell.soccerPlayer != null && fieldCell.soccerPlayer.player === this.player1) {
-            this.player1.goals++;
+        if (fieldCell.soccerPlayer != null && fieldCell.soccerPlayer.playerId === this.game.gameState.players[0].id) {
+            this.game.gameState.players[0].goals++;
             return true;
         }
     }
@@ -342,27 +295,17 @@ export class GameComponent {
     private getSelectableRowIndexes(rowIdx: number): Array<number> {
         const result = [];
 
-        if (this.activePlayer === this.player2) {
+        if (this.playerId === 1) {
             if (rowIdx - 1 >= 0) {
                 result.push(rowIdx - 1);
             }
         }
 
-        if (this.activePlayer === this.player1) {
+        if (this.playerId === 0) {
             if (rowIdx + 1 <= 8) {
                 result.push(rowIdx + 1);
             }
         }
         return result;
-    }
-
-    onOK() {
-        this.switchPlayer();
-        this.resetOptions();
-    }
-
-    private switchPlayer() {
-        this.activePlayer =
-            this.activePlayer === this.player1 ? this.player2 : this.player1;
     }
 }

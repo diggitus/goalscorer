@@ -1,9 +1,8 @@
 import { Player } from './player';
-import { FieldCell } from './field-cell';
 
 export class SoccerPlayer {
   num: number;
-  player: Player;
+  playerId: number;
   selected: boolean;
   rowIdx: number;
   colIdx: number;

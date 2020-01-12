@@ -1,13 +1,10 @@
-<div class="game" *ngIf="activePlayer">
-    <div>{{ activePlayer.name }}</div>
-    <button type="text" (click)="onOK()">OK</button>
-
+<div class="game">
     <button type="text" (click)="onReady()">Fertig!</button>
 
     <div class="row" *ngFor="let row of rows">
         <ng-container *ngFor="let fieldCell of row.fieldCells">
             <div *ngIf="fieldCell.soccerPlayer" class="field-cell soccer-player"
-                [ngClass]="{'selected': fieldCell.soccerPlayer.selected, 'player2': fieldCell.soccerPlayer.player === player2}"
+                [ngClass]="{'selected': fieldCell.soccerPlayer.selected, 'player2': fieldCell.soccerPlayer.playerId === game.gameState.players[1].id}"
                 (click)="onFieldCellClick(fieldCell)">{{ fieldCell.soccerPlayer.num }}</div>
 
             <div *ngIf="!fieldCell.soccerPlayer" class="field-cell"
