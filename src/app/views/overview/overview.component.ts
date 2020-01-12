@@ -60,10 +60,6 @@ export class OverviewComponent implements OnInit {
 
         const gameDto = new GameDto();
         gameDto.id = 0;
-        gameDto.firstTeam = 0;
-        gameDto.secondTeam = 1;
-        gameDto.firstTeamGoals = 0;
-        gameDto.secondTeamGoals = 0;
 
         const gameState = this.initGameState();
         gameDto.gameState = JSON.stringify(gameState);

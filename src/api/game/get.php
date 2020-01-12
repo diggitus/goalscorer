@@ -15,13 +15,9 @@ $gameEntity = new Game($db);
 $gameEntity->id = isset($_GET['id']) ? $_GET['id'] : die();
 $gameEntity->get();
  
-if($gameEntity->firstTeam != null){
+if($gameEntity->gameState != null){
     $gameEntities = array(
         "id" =>  $gameEntity->id,
-        "firstTeam" =>  $gameEntity->firstTeam,
-        "secondTeam" =>  $gameEntity->secondTeam,
-        "firstTeamGoals" =>  $gameEntity->firstTeamGoals,
-        "secondTeamGoals" =>  $gameEntity->secondTeamGoals,
         "gameState" =>  $gameEntity->gameState
     );
     http_response_code(200);

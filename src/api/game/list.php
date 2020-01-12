@@ -21,10 +21,6 @@ if($num > 0){
  
         $game=array(
             "id" => $id,
-            "firstTeam" => $firstTeam,
-            "secondTeam" => $secondTeam,
-            "firstTeamGoals" => $firstTeamGoals,
-            "secondTeamGoals" => $secondTeamGoals,
             "gameState" => $gameState
         );
         array_push($games["games"], $game);

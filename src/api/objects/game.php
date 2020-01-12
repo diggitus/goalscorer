@@ -5,10 +5,6 @@ class Game {
     private $tableName = "game";
 
     public $id;
-    public $firstTeam;
-    public $secondTeam;
-    public $firstTeamGoals;
-    public $secondTeamGoals;
     public $gameState;
 
     public function __construct($db) {
@@ -29,29 +25,17 @@ class Game {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $this->firstTeam = $row['firstTeam'];
-        $this->secondTeam = $row['secondTeam'];
-        $this->firstTeamGoals = $row['firstTeamGoals'];
-        $this->secondTeamGoals = $row['secondTeamGoals'];
         $this->gameState = $row['gameState'];
     }
 
     public function create(){
-        $query = "INSERT INTO " . $this->tableName . " SET firstTeam=:firstTeam, secondTeam=:secondTeam, firstTeamGoals=:firstTeamGoals, secondTeamGoals=:secondTeamGoals, gameState=:gameState";
+        $query = "INSERT INTO " . $this->tableName . " SET gameState=:gameState";
         $stmt = $this->conn->prepare($query);
      
         // sanitize
-        $this->firstTeam=htmlspecialchars(strip_tags($this->firstTeam));
-        $this->secondTeam=htmlspecialchars(strip_tags($this->secondTeam));
-        $this->firstTeamGoals=htmlspecialchars(strip_tags($this->firstTeamGoals));
-        $this->secondTeamGoals=htmlspecialchars(strip_tags($this->secondTeamGoals));
         $this->gameState=$this->gameState;
      
         // bind values
-        $stmt->bindParam(":firstTeam", $this->firstTeam);
-        $stmt->bindParam(":secondTeam", $this->secondTeam);
-        $stmt->bindParam(":firstTeamGoals", $this->firstTeamGoals);
-        $stmt->bindParam(":secondTeamGoals", $this->secondTeamGoals);
         $stmt->bindParam(":gameState", $this->gameState);
      
         if($stmt->execute()){
@@ -61,22 +45,14 @@ class Game {
     }
 
     public function update() {
-        $query = "UPDATE " . $this->tableName . " SET firstTeam=:firstTeam, secondTeam=:secondTeam, firstTeamGoals=:firstTeamGoals, secondTeamGoals=:secondTeamGoals, gameState=:gameState WHERE id=:id";
+        $query = "UPDATE " . $this->tableName . " SET gameState=:gameState WHERE id=:id";
         $stmt = $this->conn->prepare($query);
 
         // sanitize
-        $this->firstTeam=htmlspecialchars(strip_tags($this->firstTeam));
-        $this->secondTeam=htmlspecialchars(strip_tags($this->secondTeam));
-        $this->firstTeamGoals=htmlspecialchars(strip_tags($this->firstTeamGoals));
-        $this->secondTeamGoals=htmlspecialchars(strip_tags($this->secondTeamGoals));
         $this->gameState=$this->gameState;
         $this->id=htmlspecialchars(strip_tags($this->id));
 
         // bind new values
-        $stmt->bindParam(':firstTeam', $this->firstTeam);
-        $stmt->bindParam(':secondTeam', $this->secondTeam);
-        $stmt->bindParam(':firstTeamGoals', $this->firstTeamGoals);
-        $stmt->bindParam(':secondTeamGoals', $this->secondTeamGoals);
         $stmt->bindParam(':gameState', $this->gameState);
         $stmt->bindParam(':id', $this->id);
 

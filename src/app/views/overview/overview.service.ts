@@ -35,10 +35,6 @@ export class OverviewService {
     deserializeGame(gameResp: any): Game {
         const game = new Game();
         game.id = gameResp.id;
-        game.firstTeam = this.getTeam(parseInt(gameResp.firstTeam));
-        game.secondTeam = this.getTeam(parseInt(gameResp.secondTeam));
-        game.firstTeamGoals = gameResp.firstTeamGoals;
-        game.secondTeamGoals = gameResp.secondTeamGoals;
         game.gameState = gameResp.gameState ? JSON.parse(gameResp.gameState) : null;
         return game;
     }
@@ -46,10 +42,6 @@ export class OverviewService {
     serializeGame(game: Game): GameDto {
         const gameDto = new GameDto()
         gameDto.id = game.id,
-        gameDto.firstTeam = game.firstTeam.id,
-        gameDto.secondTeam = game.secondTeam.id,
-        gameDto.firstTeamGoals = game.firstTeamGoals,
-        gameDto.secondTeamGoals = game.secondTeamGoals,
         gameDto.gameState = JSON.stringify(game.gameState);
         return gameDto;
     }
