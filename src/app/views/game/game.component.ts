@@ -143,6 +143,16 @@ export class GameComponent {
             (fieldCell.rowIdx === 8 && fieldCell.colIdx === 2)
     }
 
+    private getPlayer(): Player {
+        return this.game.gameState.players[this.playerId];
+    }
+
+    isFinishButton(): boolean {
+        const unassignedSoccerPlayers = this.getPlayer().soccerPlayers
+            .filter(soccerPlayer => soccerPlayer.colIdx == null && soccerPlayer.rowIdx == null);
+        return unassignedSoccerPlayers.length === 0;
+    }
+
     onReady() {
         this.game.gameState.players[this.playerId].ready = true;
         this.updateGame();
