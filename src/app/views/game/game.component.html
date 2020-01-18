@@ -1,5 +1,5 @@
-<div class="game">
-    <button type="text" *ngIf="isFinishButton()" (click)="onReady()">Fertig!</button>
+<div class="game" *ngIf="game">
+    <button type="text" *ngIf="finishButtonVisible()" (click)="onReady()">Fertig!</button>
 
     <div class="row" *ngFor="let row of rows">
         <ng-container *ngFor="let fieldCell of row.fieldCells">

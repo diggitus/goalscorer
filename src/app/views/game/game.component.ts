@@ -147,19 +147,25 @@ export class GameComponent {
         return this.game.gameState.players[this.playerId];
     }
 
-    isFinishButton(): boolean {
+    finishButtonVisible(): boolean {
         const unassignedSoccerPlayers = this.getPlayer().soccerPlayers
             .filter(soccerPlayer => soccerPlayer.colIdx == null && soccerPlayer.rowIdx == null);
-        return unassignedSoccerPlayers.length === 0;
+        return unassignedSoccerPlayers.length === 0 && !this.getPlayer().ready;
     }
 
     onReady() {
         this.game.gameState.players[this.playerId].ready = true;
+        const allReady = this.game.gameState.players.filter(player => player.ready).length;
+
+        if (allReady === this.game.gameState.players.length) {
+            this.game.gameState.state = State.PLAYING;
+            alert(1);
+        }
         this.updateGame();
     }
 
     onFieldCellClick(fieldCell: FieldCell) {
-        if (this.isDisabledField(fieldCell)) {
+        if (this.isDisabledField(fieldCell) || this.getPlayer().ready) {
             return;
         }
 
