@@ -20,6 +20,7 @@ export class GameComponent {
     @ViewChild(PlayerAssignmentComponent, {static: false}) playerAssignment: PlayerAssignmentComponent;
 
     playerId: number | null;
+    activePlayer: Player | null;
     selectedSoccerPlayer: SoccerPlayer;
 
     rows: Array<Row>;
@@ -38,6 +39,7 @@ export class GameComponent {
         this.overviewService.getGame(parseInt(gameId)).subscribe(gameResp => {
             if (gameResp) {
                 this.game = this.overviewService.deserializeGame(gameResp);
+                this.activePlayer = this.initActivePlayer();
 
                 this.route.queryParams.pipe(filter(params => params.player)).subscribe(params => {
                     this.playerId = parseInt(params.player);
@@ -111,6 +113,10 @@ export class GameComponent {
         });
     }
 
+    private initActivePlayer(): Player {
+        return this.game.gameState.players.filter(player => player.active)[0];
+    }
+
     private isDisabledField(fieldCell: FieldCell): boolean {
         const row = fieldCell.rowIdx;
         const col = fieldCell.colIdx;
@@ -158,10 +164,19 @@ export class GameComponent {
         const allReady = this.game.gameState.players.filter(player => player.ready).length;
 
         if (allReady === this.game.gameState.players.length) {
-            this.game.gameState.state = State.PLAYING;
-            alert(1);
+            this.switchGameStateTo(State.PLAYING);
         }
         this.updateGame();
+    }
+
+    private switchGameStateTo(state: State) {
+        switch(state) {
+            case State.PLAYING:
+                this.game.gameState.state = state;
+                this.game.gameState.players[0].active = true; // player 1 always begins
+                this.activePlayer = this.game.gameState.players[0];
+                break;
+        }
     }
 
     onFieldCellClick(fieldCell: FieldCell) {
@@ -169,6 +184,7 @@ export class GameComponent {
             return;
         }
 
+        // New
         if (this.game.gameState.state === State.NEW) {
             if (this.getPlayer().ready) {
                 return;
@@ -185,7 +201,14 @@ export class GameComponent {
                     this.playerAssignment.showDialog(this.game.gameState.players[this.playerId], fieldCell);
                 }
             }
-        } else {
+
+        // Playing
+        } else if (this.game.gameState.state === State.PLAYING) {
+            if (!this.getPlayer().active) {
+                return;
+            }
+
+            // reselect soccerplayer
             if (this.isSoccerPlayerAlreadySelected(fieldCell)) {
                 this.selectedSoccerPlayer = null;
                 fieldCell.soccerPlayer.selected = false;
@@ -193,6 +216,7 @@ export class GameComponent {
                 return;
             }
             
+            // select soccerplayer
             if (fieldCell.soccerPlayer) {
                 if (fieldCell.soccerPlayer.playerId !== this.playerId) {
                     return;
@@ -215,6 +239,7 @@ export class GameComponent {
                     this.selectedSoccerPlayer = null;
                     this.resetSoccerPlayerSelection();
                     this.resetOptions();
+                    this.switchActivePlayer();
                     
                     if (this.isGameOver()) {
                         alert(this.game.gameState.players[this.playerId].name);
@@ -273,6 +298,17 @@ export class GameComponent {
                 fieldCell.highlighted = false;
             });
         });
+    }
+
+    private switchActivePlayer() {
+        for (const player of this.game.gameState.players) {
+            if (player.active) {
+                player.active = false;
+            } else {
+                player.active = true;
+                this.activePlayer = player;
+            }
+        }
     }
 
     private showOptions() {

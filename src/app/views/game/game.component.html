@@ -1,5 +1,6 @@
 <div class="game" *ngIf="game">
     <button type="text" *ngIf="finishButtonVisible()" (click)="onReady()">Fertig!</button>
+    <span *ngIf="activePlayer">Aktiver Spieler: {{ activePlayer.id }}</span>
 
     <div class="row" *ngFor="let row of rows">
         <ng-container *ngFor="let fieldCell of row.fieldCells">
