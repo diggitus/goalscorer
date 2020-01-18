@@ -24,11 +24,11 @@ export class GameComponent {
     selectedSoccerPlayer: SoccerPlayer;
 
     rows: Array<Row>;
+    game: Game;
 
     private rowsLength = 9;
     private colsLength = 5;
 
-    private game: Game;
 
     constructor(
         private route: ActivatedRoute,
