@@ -165,12 +165,14 @@ export class GameComponent {
     }
 
     onFieldCellClick(fieldCell: FieldCell) {
-        if (this.isDisabledField(fieldCell) || this.getPlayer().ready) {
+        if (this.isDisabledField(fieldCell)) {
             return;
         }
 
         if (this.game.gameState.state === State.NEW) {
-            if (fieldCell.soccerPlayer) {
+            if (this.getPlayer().ready) {
+                return;
+            } else if (fieldCell.soccerPlayer) {
                 // delete soccer player on that position
                 if (this.isSelectableField(fieldCell) && !this.isGoalkeeper(fieldCell)) {
                     fieldCell.soccerPlayer.rowIdx = null;
