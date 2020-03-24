@@ -17,7 +17,7 @@ import { PlayerAssignmentComponent } from 'src/app/player-assignment/player-assi
 })
 export class GameComponent {
 
-    @ViewChild(PlayerAssignmentComponent, {static: false}) playerAssignment: PlayerAssignmentComponent;
+    @ViewChild(PlayerAssignmentComponent, { static: false }) playerAssignment: PlayerAssignmentComponent;
 
     playerId: number | null;
     activePlayer: Player | null;
@@ -25,6 +25,8 @@ export class GameComponent {
 
     rows: Array<Row>;
     game: Game;
+    diceEnabled: boolean;
+    suEnabled: boolean; // switch user button
 
     private rowsLength = 9;
     private colsLength = 5;
@@ -34,8 +36,11 @@ export class GameComponent {
         private route: ActivatedRoute,
         private overviewService: OverviewService
     ) {
+        this.diceEnabled = false;
+        this.suEnabled = false;
+
         const gameId = this.route.snapshot.paramMap.get('id');
-        
+
         this.overviewService.getGame(parseInt(gameId)).subscribe(gameResp => {
             if (gameResp) {
                 this.game = this.overviewService.deserializeGame(gameResp);
@@ -47,9 +52,13 @@ export class GameComponent {
 
                 this.initRows();
                 this.initSoccerPlayers(this.game.gameState);
-                
+
                 if (this.game.gameState.state === State.NEW) {
                     this.highlightFields();
+                } else if (this.game.gameState.state === State.PLAYING) {
+                    if (this.getPlayer().active) {
+                        this.diceEnabled = true;
+                    }
                 }
             }
         });
@@ -104,7 +113,7 @@ export class GameComponent {
             player.soccerPlayers.forEach(soccerPlayer => {
                 const rowIdx = soccerPlayer.rowIdx;
                 const colIdx = soccerPlayer.colIdx;
-    
+
                 if (rowIdx != null && colIdx != null) {
                     soccerPlayer.playerId = player.id;
                     this.rows[rowIdx].fieldCells[colIdx].soccerPlayer = soccerPlayer;
@@ -169,22 +178,61 @@ export class GameComponent {
         this.updateGame();
     }
 
+    onRolledDice(randNumber: number) {
+        this.resetSoccerPlayerHighlighting();
+        this.resetSoccerPlayerSelection();
+        this.resetOptions();
+        const highlightedSoccerPlayers = this.highlightSoccerPlayers(randNumber);
+
+        if (!this.canMoveAnySoccerPlayer(highlightedSoccerPlayers)) {
+            this.suEnabled = true;
+        }
+        this.diceEnabled = false;
+    }
+
+    private canMoveAnySoccerPlayer(highlightedSoccerPlayers: Array<SoccerPlayer>): boolean {
+        for (const soccerPlayer of highlightedSoccerPlayers) {
+            const fieldOptions = this.showOptions(soccerPlayer, true);
+
+            if (fieldOptions.length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private highlightSoccerPlayers(soccerPlayerNum: number): Array<SoccerPlayer> {
+        const highlightedSoccerPlayers = new Array<SoccerPlayer>();
+        this.activePlayer.soccerPlayers.forEach(soccerPlayer => {
+            if (soccerPlayer.num === soccerPlayerNum) {
+                soccerPlayer.highlighted = true;
+                highlightedSoccerPlayers.push(soccerPlayer);
+            }
+        });
+        return highlightedSoccerPlayers;
+    }
+
     private switchGameStateTo(state: State) {
-        switch(state) {
+        switch (state) {
             case State.PLAYING:
                 this.game.gameState.state = state;
                 this.game.gameState.players[0].active = true; // player 1 always begins
                 this.activePlayer = this.game.gameState.players[0];
+                this.diceEnabled = true;
                 break;
         }
     }
 
     onFieldCellClick(fieldCell: FieldCell) {
+        if (this.diceEnabled) {
+            return;
+        }
+
         if (this.isDisabledField(fieldCell)) {
             return;
         }
 
-        // New
+        // State: New
         if (this.game.gameState.state === State.NEW) {
             if (this.getPlayer().ready) {
                 return;
@@ -202,7 +250,7 @@ export class GameComponent {
                 }
             }
 
-        // Playing
+            // State: Playing
         } else if (this.game.gameState.state === State.PLAYING) {
             if (!this.getPlayer().active) {
                 return;
@@ -215,21 +263,21 @@ export class GameComponent {
                 this.resetOptions();
                 return;
             }
-            
+
             // select soccerplayer
             if (fieldCell.soccerPlayer) {
                 if (fieldCell.soccerPlayer.playerId !== this.playerId) {
                     return;
                 }
-                
+
                 this.selectedSoccerPlayer = fieldCell.soccerPlayer;
                 this.resetSoccerPlayerSelection();
                 fieldCell.soccerPlayer.selected = true;
                 this.resetOptions();
-                this.showOptions();
+                this.showOptions(this.selectedSoccerPlayer);
                 return;
             }
-            
+
             if (this.selectedSoccerPlayer) {
                 if (fieldCell.highlighted) {
                     this.removeSoccerPlayerFromFieldCell(this.selectedSoccerPlayer.rowIdx, this.selectedSoccerPlayer.colIdx);
@@ -237,10 +285,11 @@ export class GameComponent {
                     this.selectedSoccerPlayer.colIdx = fieldCell.colIdx;
                     fieldCell.soccerPlayer = this.selectedSoccerPlayer;
                     this.selectedSoccerPlayer = null;
+                    this.resetSoccerPlayerHighlighting();
                     this.resetSoccerPlayerSelection();
                     this.resetOptions();
                     this.switchActivePlayer();
-                    
+
                     if (this.isGameOver()) {
                         alert(this.game.gameState.players[this.playerId].name);
                         return;
@@ -292,6 +341,16 @@ export class GameComponent {
         });
     }
 
+    private resetSoccerPlayerHighlighting() {
+        this.rows.forEach(row => {
+            row.fieldCells.forEach(fieldCell => {
+                if (fieldCell.soccerPlayer) {
+                    fieldCell.soccerPlayer.highlighted = false;
+                }
+            });
+        });
+    }
+
     private resetOptions() {
         this.rows.forEach(row => {
             row.fieldCells.forEach(fieldCell => {
@@ -300,7 +359,7 @@ export class GameComponent {
         });
     }
 
-    private switchActivePlayer() {
+    switchActivePlayer() {
         for (const player of this.game.gameState.players) {
             if (player.active) {
                 player.active = false;
@@ -309,11 +368,14 @@ export class GameComponent {
                 this.activePlayer = player;
             }
         }
+        this.suEnabled = false;
     }
 
-    private showOptions() {
-        const currentRowIdx = this.selectedSoccerPlayer.rowIdx;
-        const currentColIdx = this.selectedSoccerPlayer.colIdx;
+    private showOptions(soccerPlayer: SoccerPlayer, dryRun?: boolean): Array<FieldCell> {
+        const highlightedFieldCells = new Array<FieldCell>();
+
+        const currentRowIdx = soccerPlayer.rowIdx;
+        const currentColIdx = soccerPlayer.colIdx;
 
         const selectableRowIndexes = this.getSelectableRowIndexes(currentRowIdx);
         const selectableColIndexes = this.getSelectableColIndexes(currentColIdx);
@@ -325,11 +387,15 @@ export class GameComponent {
                         if (fieldCell.disabled) return;
                         if (fieldCell.soccerPlayer) return;
 
-                        fieldCell.highlighted = true;
+                        if (!dryRun) {
+                            fieldCell.highlighted = true;
+                        }
+                        highlightedFieldCells.push(fieldCell);
                     }
                 }
             });
         });
+        return highlightedFieldCells;
     }
 
     private getSelectableColIndexes(colIdx: number): Array<number> {

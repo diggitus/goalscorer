@@ -1,0 +1,16 @@
+.dice {
+    width: 100px;
+    height: 100px;
+    background-color: grey;
+    color: white;
+    font-size: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    opacity: 1;
+
+    &.disabled {
+        opacity: .3;
+    }
+}

@@ -1,11 +1,13 @@
 <div class="game" *ngIf="game">
+    <!-- game information -->
     <button type="text" *ngIf="finishButtonVisible()" (click)="onReady()">Fertig!</button>
     <span *ngIf="activePlayer">Aktiver Spieler: {{ activePlayer.id }}</span>
 
+    <!-- game field -->
     <div class="row" *ngFor="let row of rows">
         <ng-container *ngFor="let fieldCell of row.fieldCells">
             <div *ngIf="fieldCell.soccerPlayer" class="field-cell soccer-player"
-                [ngClass]="{'selected': fieldCell.soccerPlayer.selected, 'player2': fieldCell.soccerPlayer.playerId === game.gameState.players[1].id}"
+                [ngClass]="{'soccer-highlighted': fieldCell.soccerPlayer.highlighted, 'selected': fieldCell.soccerPlayer.selected, 'player2': fieldCell.soccerPlayer.playerId === game.gameState.players[1].id}"
                 (click)="onFieldCellClick(fieldCell)">{{ fieldCell.soccerPlayer.num }}</div>
 
             <div *ngIf="!fieldCell.soccerPlayer" class="field-cell"
@@ -14,5 +16,7 @@
         </ng-container>
     </div>
 
+    <app-dice (rolledDice)="onRolledDice($event)" [enabled]="diceEnabled"></app-dice>
+    <button type="text" *ngIf="suEnabled" (click)="switchActivePlayer()">Spieler wechseln</button>
     <app-player-assignment (select)="onSoccerPlayerAssigned()"></app-player-assignment>
 </div>

@@ -11,6 +11,7 @@ import { OverviewService } from './views/overview/overview.service';
 import { HttpClientModule } from '@angular/common/http';
 import { TeamSelectComponent } from './team-select/team-select.component';
 import { PlayerAssignmentComponent } from './player-assignment/player-assignment.component';
+import { DiceComponent } from './dice/dice.component';
 
 const routes: Routes = [
   { path: 'overview', component: OverviewComponent },
@@ -31,7 +32,8 @@ const routes: Routes = [
     OverviewComponent,
     GameComponent,
     TeamSelectComponent,
-    PlayerAssignmentComponent
+    PlayerAssignmentComponent,
+    DiceComponent
   ],
   providers: [
     OverviewService

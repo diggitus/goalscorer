@@ -1,0 +1,8 @@
+<div class="dice" [ngClass]="{'disabled': !enabled}" (click)="onRoll()">
+    <span *ngIf="randomNumber">
+        {{ randomNumber }}
+    </span>
+    <span *ngIf="!randomNumber">
+        würfeln
+    </span>
+</div>
